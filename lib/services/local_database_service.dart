@@ -364,8 +364,15 @@ class LocalDatabaseService {
       return _databaseName;
     }
 
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return path.join(await getDatabasesPath(), _databaseName);
+    }
+
+    // Initialize FFI for Desktop (Linux, Windows, macOS)
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+
     final directory = await getApplicationSupportDirectory();
     return path.join(directory.path, _databaseName);
   }
