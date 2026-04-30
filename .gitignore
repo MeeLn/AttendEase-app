@@ -1,0 +1,90 @@
+# ----------------------------------------------------------------------------
+# Flutter/Dart Specific
+# ----------------------------------------------------------------------------
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# ----------------------------------------------------------------------------
+# Android Specific
+# ----------------------------------------------------------------------------
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+android/local.properties
+android/key.properties
+android/app/src/main/res/raw/
+**/android/.gradle/
+**/android/build/
+*.jks
+*.keystore
+
+# ----------------------------------------------------------------------------
+# iOS/macOS Specific
+# ----------------------------------------------------------------------------
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.framework
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/flutter_frameworks.sh
+**/ios/Runner/GeneratedPluginRegistrant.[hm]
+**/ios/ServiceDefinitions.json
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Config/
+**/macos/Flutter/ephemeral/
+**/macos/Pods/
+**/macos/.symlinks/
+**/macos/Config/
+Podfile.lock
+
+# ----------------------------------------------------------------------------
+# Desktop (Linux/Windows) Specific
+# ----------------------------------------------------------------------------
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+
+# ----------------------------------------------------------------------------
+# IDE Specific (Android Studio / IntelliJ / VS Code)
+# ----------------------------------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.history/
+.project
+.classpath
+.settings/
+
+# ----------------------------------------------------------------------------
+# Environment / Secrets / Logs
+# ----------------------------------------------------------------------------
+.env
+.env.*
+*.log
+*.bak
+*.swp
+*.orig
+
+# ----------------------------------------------------------------------------
+# OS Specific
+# ----------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# ----------------------------------------------------------------------------
+# Exceptions (Files that SHOULD be tracked)
+# ----------------------------------------------------------------------------
+!**/ios/Runner/GeneratedPluginRegistrant.h
+!**/ios/Runner/GeneratedPluginRegistrant.m
+!**/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+.gradle/
+.flutter-plugins-dependencies
