@@ -320,6 +320,9 @@ class _ProfilePageState extends State<ProfilePage> {
           child: IconButton(
             constraints: const BoxConstraints(),
             padding: EdgeInsets.zero,
+            style: IconButton.styleFrom(
+              shape: const CircleBorder(),
+            ),
             icon: Icon(
               obscure
                   ? Icons.visibility_off_outlined

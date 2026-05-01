@@ -426,6 +426,11 @@ class _Header extends StatelessWidget {
           if (isWide)
             IconButton(
               icon: const Icon(Icons.menu),
+              style: IconButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               onPressed: () {
                 Scaffold.of(context).openDrawer();
               },

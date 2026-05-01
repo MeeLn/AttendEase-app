@@ -222,6 +222,11 @@ class _CoursesPageState extends State<CoursesPage> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        style: IconButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                         onPressed: () => widget.controller.deleteCourse(course.id),
                       ),
                     ],
@@ -331,6 +336,11 @@ class _DepartmentsPageState extends State<DepartmentsPage> {
                   title: Text(department.name),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    style: IconButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                     onPressed: () =>
                         widget.controller.deleteDepartment(department.id),
                   ),
@@ -415,6 +425,11 @@ class UsersPage extends StatelessWidget {
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      style: IconButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                       onPressed: () => controller.deleteUser(user.id),
                     ),
                   ],

@@ -153,6 +153,9 @@ class _AuthPageState extends State<AuthPage> {
               child: IconButton(
                 constraints: const BoxConstraints(),
                 padding: EdgeInsets.zero,
+                style: IconButton.styleFrom(
+                  shape: const CircleBorder(),
+                ),
                 icon: Icon(
                   _obscureLoginPassword
                       ? Icons.visibility_off_outlined
@@ -403,6 +406,9 @@ class _AuthPageState extends State<AuthPage> {
                 child: IconButton(
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
+                  style: IconButton.styleFrom(
+                    shape: const CircleBorder(),
+                  ),
                   icon: Icon(
                     obscureText
                         ? Icons.visibility_off_outlined
