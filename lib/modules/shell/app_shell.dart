@@ -174,11 +174,13 @@ class _AppShellState extends State<AppShell> {
     return Container(
       width: 280,
       color: sidebarBg,
-      child: Column(
-        children: [
-          // Top section: App info and User info
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // Top section: App info and User info
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             decoration: BoxDecoration(
               color: headerBg,
             ),
@@ -412,7 +414,8 @@ class _AppShellState extends State<AppShell> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   List<_ShellDestination> _destinationsForRole(UserRole role) {
