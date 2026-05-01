@@ -21,7 +21,6 @@ class CustomDropdown<T> extends StatefulWidget {
 }
 
 class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
-  static const _iconColor = Color(0xFF1E5674);
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
   bool _isOpen = false;
@@ -85,6 +84,14 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
   }
 
   OverlayEntry _buildOverlay(double width) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final overlayBg = isDark ? const Color(0xFF1A2930) : Colors.white;
+    final overlayBorder = primary;
+    final selectedBg = primary.withValues(alpha: 0.1);
+    final selectedText = primary;
+    final normalText = isDark ? const Color(0xFFE8F0F2) : const Color(0xFF0F2C3F);
+
     return OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -103,10 +110,10 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
               width: width,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: overlayBg,
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(
-                    color: _iconColor,
+                    color: overlayBorder,
                     width: 1.5,
                   ),
                 ),
@@ -119,7 +126,7 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
                       final selected = widget.selectedValue == item.value;
                       return Material(
                         color: selected
-                            ? _iconColor.withValues(alpha: 0.1)
+                            ? selectedBg
                             : Colors.transparent,
                         child: InkWell(
                           onTap: () => _selectItem(item.value),
@@ -131,9 +138,9 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
                             child: Row(
                               children: [
                                 if (selected)
-                                  const Icon(
+                                  Icon(
                                     Icons.check,
-                                    color: _iconColor,
+                                    color: selectedText,
                                     size: 20,
                                   )
                                 else
@@ -145,8 +152,8 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       color: selected
-                                          ? _iconColor
-                                          : const Color(0xFF0F2C3F),
+                                          ? selectedText
+                                          : normalText,
                                       fontWeight: selected
                                           ? FontWeight.w600
                                           : FontWeight.normal,
@@ -171,6 +178,9 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final suffixBg = isDark ? Colors.white24 : Colors.black26;
     return CompositedTransformTarget(
       link: _layerLink,
       child: TextField(
@@ -179,10 +189,18 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
         controller: _controller,
         decoration: InputDecoration(
           labelText: widget.hintText,
-          prefixIcon: Icon(widget.icon, color: _iconColor),
-          suffixIcon: Icon(
-            _isOpen ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-            color: _iconColor,
+          prefixIcon: Icon(widget.icon, color: primary),
+          suffixIcon: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: suffixBg,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              _isOpen ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+              color: primary,
+              size: 20,
+            ),
           ),
         ),
       ),

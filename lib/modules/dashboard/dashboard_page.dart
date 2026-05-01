@@ -200,16 +200,7 @@ class _CoursesPageState extends State<CoursesPage> {
           ),
           if (_formExpanded) const SizedBox(height: 16),
           if (widget.controller.courses.isNotEmpty)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Icon(Icons.list_alt_outlined, size: 16, color: Colors.black45),
-                  SizedBox(width: 8),
-                  Text('All Courses', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black54, fontSize: 13)),
-                ],
-              ),
-            ),
+            _SectionHeader(label: 'All Courses'),
           ...widget.controller.courses.map(
             (course) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -230,7 +221,7 @@ class _CoursesPageState extends State<CoursesPage> {
                             widget.controller.toggleCourseStatus(course.id),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
                         style: IconButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -335,16 +326,7 @@ class _DepartmentsPageState extends State<DepartmentsPage> {
           ),
           if (_formExpanded) const SizedBox(height: 16),
           if (widget.controller.departments.isNotEmpty)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Icon(Icons.list_alt_outlined, size: 16, color: Colors.black45),
-                  SizedBox(width: 8),
-                  Text('All Departments', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black54, fontSize: 13)),
-                ],
-              ),
-            ),
+            _SectionHeader(label: 'All Departments'),
           ...widget.controller.departments.map(
             (department) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -352,7 +334,7 @@ class _DepartmentsPageState extends State<DepartmentsPage> {
                 child: ListTile(
                   title: Text(department.name),
                   trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
                     style: IconButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -410,16 +392,7 @@ class UsersPage extends StatelessWidget {
             subtitle: 'Review, approve, and manage all registered users.',
           ),
           if (controller.users.isNotEmpty)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Icon(Icons.list_alt_outlined, size: 16, color: Colors.black45),
-                  SizedBox(width: 8),
-                  Text('All Users', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black54, fontSize: 13)),
-                ],
-              ),
-            ),
+            _SectionHeader(label: 'All Users'),
           ...controller.users.map((user) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
@@ -441,13 +414,13 @@ class UsersPage extends StatelessWidget {
                       onChanged: (_) async => controller.toggleUserStatus(user.id),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      style: IconButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                    icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+                    style: IconButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      onPressed: () => controller.deleteUser(user.id),
+                    ),
+                    onPressed: () => controller.deleteUser(user.id),
                     ),
                   ],
                 ),
@@ -942,10 +915,16 @@ class _PageHeader extends StatelessWidget {
   final String subtitle;
   final VoidCallback? onToggle;
   final bool formExpanded;
-  static const Color color = Color(0xFF1E5674);
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
+    final iconBg = primary.withValues(alpha: 0.1);
+    final iconColor = primary;
+    final titleColor = isDark ? const Color(0xFFE8F0F2) : const Color(0xFF0F2C3F);
+    final subtitleColor = isDark ? Colors.white54 : Colors.black54;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -954,10 +933,10 @@ class _PageHeader extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: iconBg,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: iconColor, size: 24),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -968,7 +947,7 @@ class _PageHeader extends StatelessWidget {
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0F2C3F),
+                        color: titleColor,
                       ),
                 ),
                 const SizedBox(height: 2),
@@ -977,7 +956,7 @@ class _PageHeader extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
-                      ?.copyWith(color: Colors.black54),
+                      ?.copyWith(color: subtitleColor),
                 ),
               ],
             ),
@@ -1039,6 +1018,38 @@ class _StatCard extends StatelessWidget {
             Text(stat.label),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(
+            Icons.list_alt_outlined,
+            size: 16,
+            color: isDark ? Colors.white54 : Colors.black45,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white54 : Colors.black54,
+              fontSize: 13,
+            ),
+          ),
+        ],
       ),
     );
   }

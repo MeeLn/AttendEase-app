@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/models/entities.dart';
 import '../../core/state/app_controller.dart';
+import '../../core/widgets/theme_toggle.dart';
 import '../dashboard/dashboard_page.dart';
 import '../profile/profile_page.dart';
 
@@ -26,6 +27,7 @@ class _AppShellState extends State<AppShell> {
     final isWide = MediaQuery.sizeOf(context).width >= 1000;
     final profileIndex = destinations.length - 1;
     final isProfile = _index == profileIndex;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_index >= pages.length) {
       _index = 0;
@@ -71,12 +73,12 @@ class _AppShellState extends State<AppShell> {
       bottomNavigationBar: isWide
           ? null
           : Container(
-              height: 90, // Slightly taller to fit icon + label comfortably
+              height: 90,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                     offset: const Offset(0, -4),
                     blurRadius: 12,
                   ),
@@ -89,8 +91,8 @@ class _AppShellState extends State<AppShell> {
                   final dest = entry.value;
                   final isSelected = _index == index;
                   final color = isSelected
-                      ? const Color(0xFF1E5674)
-                      : Colors.black54;
+                      ? Theme.of(context).colorScheme.primary
+                      : (isDark ? Colors.white54 : Colors.black54);
 
                   return Expanded(
                     child: InkWell(
@@ -108,7 +110,7 @@ class _AppShellState extends State<AppShell> {
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? const Color(0xFF1E5674).withValues(alpha: 0.12)
+                                  ? Theme.of(context).colorScheme.primary.withValues(alpha: isDark ? 0.2 : 0.12)
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -149,16 +151,33 @@ class _AppShellState extends State<AppShell> {
     UserAccount? user,
     int profileIndex,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
+    final sidebarBg = isDark ? const Color(0xFF0F1923) : Colors.white;
+    final headerBg = isDark ? primary.withValues(alpha: 0.08) : primary.withValues(alpha: 0.05);
+    final avatarBg = isDark ? primary.withValues(alpha: 0.15) : primary.withValues(alpha: 0.1);
+    final nameColor = isDark ? const Color(0xFFE8F0F2) : const Color(0xFF0F2C3F);
+    final emailColor = isDark ? Colors.white54 : Colors.black54;
+    final badgeBg = isDark ? primary.withValues(alpha: 0.15) : primary.withValues(alpha: 0.1);
+    final badgeText = isDark ? primary : const Color(0xFF1E5674);
+    final dividerColor = isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black12;
+    final menuSelectedBg = isDark ? primary.withValues(alpha: 0.15) : const Color(0xFF1E5674).withValues(alpha: 0.12);
+    final menuIconColor = isDark ? Colors.white54 : Colors.black54;
+    final menuTextColor = isDark ? Colors.white70 : Colors.black87;
+    final selectedMenuIcon = isDark ? primary : const Color(0xFF1E5674);
+    final selectedMenuText = isDark ? primary : const Color(0xFF1E5674);
+    final avatarInitials = isDark ? primary : const Color(0xFF1E5674);
+
     return Container(
       width: 280,
-      color: Colors.white,
+      color: sidebarBg,
       child: Column(
         children: [
           // Top section: App info and User info
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E5674).withValues(alpha: 0.05),
+              color: headerBg,
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -169,7 +188,7 @@ class _AppShellState extends State<AppShell> {
                   child: Container(
                     width: 64,
                     height: 64,
-                    color: const Color(0xFF1E5674).withValues(alpha: 0.1),
+                    color: avatarBg,
                     child: session.role == UserRole.admin
                         ? Image.asset(
                             'assets/admin-logo.png',
@@ -184,15 +203,15 @@ class _AppShellState extends State<AppShell> {
                                 child: user != null
                                     ? Text(
                                         user.initials,
-                                        style: const TextStyle(
-                                          color: Color(0xFF1E5674),
+                                        style: TextStyle(
+                                          color: avatarInitials,
                                           fontSize: 22,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       )
-                                    : const Icon(
+                                    : Icon(
                                         Icons.person,
-                                        color: Color(0xFF1E5674),
+                                        color: avatarInitials,
                                         size: 32,
                                       ),
                               )),
@@ -206,8 +225,8 @@ class _AppShellState extends State<AppShell> {
                     children: [
                       Text(
                         user?.fullName ?? session.role.name.toUpperCase(),
-                        style: const TextStyle(
-                          color: Color(0xFF0F2C3F),
+                        style: TextStyle(
+                          color: nameColor,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -216,8 +235,8 @@ class _AppShellState extends State<AppShell> {
                       const SizedBox(height: 2),
                       Text(
                         user?.email ?? 'admin@admin.com',
-                        style: const TextStyle(
-                          color: Colors.black54,
+                        style: TextStyle(
+                          color: emailColor,
                           fontSize: 12,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -229,13 +248,13 @@ class _AppShellState extends State<AppShell> {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E5674).withValues(alpha: 0.1),
+                          color: badgeBg,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           session.role.name.toUpperCase(),
-                          style: const TextStyle(
-                            color: Color(0xFF1E5674),
+                          style: TextStyle(
+                            color: badgeText,
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -247,7 +266,7 @@ class _AppShellState extends State<AppShell> {
               ],
             ),
           ),
-          const Divider(height: 1, color: Colors.black12),
+          Divider(height: 1, color: dividerColor),
           // Middle section: Menu items
           Expanded(
             child: ListView.builder(
@@ -272,7 +291,7 @@ class _AppShellState extends State<AppShell> {
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF1E5674).withValues(alpha: 0.12)
+                            ? menuSelectedBg
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -281,16 +300,16 @@ class _AppShellState extends State<AppShell> {
                           Icon(
                             destination.icon,
                             color: isSelected
-                                ? const Color(0xFF1E5674)
-                                : Colors.black54,
+                                ? selectedMenuIcon
+                                : menuIconColor,
                           ),
                           const SizedBox(width: 16),
                           Text(
                             destination.label,
                             style: TextStyle(
                               color: isSelected
-                                  ? const Color(0xFF1E5674)
-                                  : Colors.black87,
+                                  ? selectedMenuText
+                                  : menuTextColor,
                               fontWeight: isSelected
                                   ? FontWeight.bold
                                   : FontWeight.normal,
@@ -305,7 +324,7 @@ class _AppShellState extends State<AppShell> {
               },
             ),
           ),
-          const Divider(height: 1, color: Colors.black12),
+          Divider(height: 1, color: dividerColor),
           // Bottom section: Profile and Logout
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
@@ -327,36 +346,37 @@ class _AppShellState extends State<AppShell> {
                       ),
                       decoration: BoxDecoration(
                         color: _index == profileIndex
-                            ? const Color(0xFF1E5674).withValues(alpha: 0.12)
+                            ? menuSelectedBg
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.person_outline,
-                            color: _index == profileIndex
-                                ? const Color(0xFF1E5674)
-                                : Colors.black54,
-                          ),
-                          const SizedBox(width: 16),
-                          Text(
-                            'Profile',
-                            style: TextStyle(
-                              color: _index == profileIndex
-                                  ? const Color(0xFF1E5674)
-                                  : Colors.black87,
-                              fontWeight: _index == profileIndex
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.person_outline,
+                        color: _index == profileIndex
+                            ? selectedMenuIcon
+                            : menuIconColor,
                       ),
+                      const SizedBox(width: 16),
+                      Text(
+                        'Profile',
+                        style: TextStyle(
+                          color: _index == profileIndex
+                              ? selectedMenuText
+                              : menuTextColor,
+                          fontWeight: _index == profileIndex
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
                     ),
                   ),
                 ),
+                ThemeToggle(controller: widget.controller),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
                   child: InkWell(
@@ -369,12 +389,12 @@ class _AppShellState extends State<AppShell> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.logout, color: Colors.redAccent),
+                          Icon(Icons.logout, color: isDark ? const Color(0xFFEF5350) : Colors.redAccent),
                           const SizedBox(width: 16),
-                          const Text(
+                          Text(
                             'Logout',
                             style: TextStyle(
-                              color: Colors.redAccent,
+                              color: isDark ? const Color(0xFFEF5350) : Colors.redAccent,
                               fontWeight: FontWeight.normal,
                               fontSize: 15,
                             ),
@@ -462,14 +482,15 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardTheme.color,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             offset: const Offset(0, 4),
             blurRadius: 8,
           ),
@@ -479,7 +500,10 @@ class _Header extends StatelessWidget {
         children: [
           if (isWide)
             IconButton(
-              icon: const Icon(Icons.menu),
+              icon: Icon(
+                Icons.menu,
+                color: isDark ? Colors.white70 : null,
+              ),
               style: IconButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

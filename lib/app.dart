@@ -36,6 +36,8 @@ class _AttendEaseAppState extends State<AttendEaseApp> {
           title: 'AttendEase',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: _controller.flutterThemeMode,
           home: AnimatedSwitcher(
             duration: const Duration(milliseconds: 280),
             child: !_controller.isReady

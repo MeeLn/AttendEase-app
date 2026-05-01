@@ -1,10 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/face_recognition_service.dart';
 import '../../services/local_database_service.dart';
 import '../models/entities.dart';
+
+enum AppThemeMode { system, light, dark }
 
 class AppController extends ChangeNotifier {
   AppController() {
@@ -16,6 +19,16 @@ class AppController extends ChangeNotifier {
   Session? session;
   bool isReady = false;
   String? initializationError;
+  AppThemeMode _themeMode = AppThemeMode.system;
+
+  AppThemeMode get themeMode => _themeMode;
+
+  Future<void> setThemeMode(AppThemeMode mode) async {
+    _themeMode = mode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('themeMode', mode.index);
+    notifyListeners();
+  }
 
   List<Department> departments = [];
   List<Course> courses = [];
@@ -83,6 +96,17 @@ class AppController extends ChangeNotifier {
   void logout() {
     session = null;
     notifyListeners();
+  }
+
+  ThemeMode get flutterThemeMode {
+    switch (themeMode) {
+      case AppThemeMode.system:
+        return ThemeMode.system;
+      case AppThemeMode.light:
+        return ThemeMode.light;
+      case AppThemeMode.dark:
+        return ThemeMode.dark;
+    }
   }
 
   Future<String?> registerStudent({
@@ -346,6 +370,11 @@ class AppController extends ChangeNotifier {
       await _reloadData();
       isReady = true;
       initializationError = null;
+      final prefs = await SharedPreferences.getInstance();
+      final savedThemeIndex = prefs.getInt('themeMode');
+      if (savedThemeIndex != null && savedThemeIndex < AppThemeMode.values.length) {
+        _themeMode = AppThemeMode.values[savedThemeIndex];
+      }
     } catch (error) {
       initializationError = error.toString();
       isReady = true;

@@ -142,7 +142,7 @@ class _AuthPageState extends State<AuthPage> {
           'Sign in to continue to your attendance workspace.',
           style: Theme.of(
             context,
-          ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
+          ).textTheme.bodyLarge?.copyWith(color: Theme.of(context).brightness == Brightness.dark ? Colors.white54 : Colors.black54),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
@@ -354,6 +354,7 @@ class _AuthPageState extends State<AuthPage> {
     required String title,
     required String subtitle,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -373,7 +374,7 @@ class _AuthPageState extends State<AuthPage> {
           subtitle,
           style: Theme.of(
             context,
-          ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
+          ).textTheme.bodyLarge?.copyWith(color: isDark ? Colors.white54 : Colors.black54),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 18),

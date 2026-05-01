@@ -61,12 +61,25 @@ class _ProfilePageState extends State<ProfilePage> {
     final user = widget.controller.currentUser;
     final isAdmin = session.role == UserRole.admin;
     final isStudent = session.role == UserRole.student;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
+    final bgColor = isDark ? const Color(0xFF0B1118) : const Color(0xFFF4F6F8);
+    final avatarBg = isDark ? primary.withValues(alpha: 0.15) : primary.withValues(alpha: 0.1);
+    final avatarInitials = isDark ? primary : const Color(0xFF1E5674);
+    final nameColor = isDark ? const Color(0xFFE8F0F2) : const Color(0xFF0F2C3F);
+    final emailColor = isDark ? Colors.white54 : Colors.black54;
+    final badgeBg = isDark ? primary.withValues(alpha: 0.15) : primary.withValues(alpha: 0.1);
+    final badgeText = isDark ? primary : const Color(0xFF1E5674);
 
     return Container(
-      color: const Color(0xFFF4F6F8),
+      color: bgColor,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.sizeOf(context).height - kToolbarHeight - 80 - 48,
+          ),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Avatar + Name Card
@@ -80,7 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Container(
                         width: 72,
                         height: 72,
-                        color: const Color(0xFF1E5674).withValues(alpha: 0.1),
+                        color: avatarBg,
                         child: isAdmin
                             ? Image.asset('assets/admin-logo.png',
                                 fit: BoxFit.cover)
@@ -90,8 +103,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 : Center(
                                     child: Text(
                                       user?.initials ?? '?',
-                                      style: const TextStyle(
-                                        color: Color(0xFF1E5674),
+                                      style: TextStyle(
+                                        color: avatarInitials,
                                         fontSize: 26,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -108,18 +121,18 @@ class _ProfilePageState extends State<ProfilePage> {
                             isAdmin
                                 ? 'Administrator'
                                 : (user?.fullName ?? '—'),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF0F2C3F),
+                              color: nameColor,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             user?.email ?? session.email,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
-                              color: Colors.black54,
+                              color: emailColor,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -127,14 +140,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1E5674)
-                                  .withValues(alpha: 0.1),
+                              color: badgeBg,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               session.role.name.toUpperCase(),
-                              style: const TextStyle(
-                                color: Color(0xFF1E5674),
+                              style: TextStyle(
+                                color: badgeText,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -292,7 +304,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         label: const Text('Save changes'),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: const Color(0xFF1E5674),
                         ),
                       ),
                     ),
@@ -301,6 +312,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
             const SizedBox(height: 32),
           ],
+          ),
         ),
       ),
     );
@@ -312,12 +324,13 @@ class _ProfilePageState extends State<ProfilePage> {
     required IconData icon,
     TextInputType? keyboardType,
   }) {
+    final primary = Theme.of(context).colorScheme.primary;
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF1E5674)),
+        prefixIcon: Icon(icon, color: primary),
       ),
     );
   }
@@ -328,13 +341,13 @@ class _ProfilePageState extends State<ProfilePage> {
     required bool obscure,
     required VoidCallback onToggle,
   }) {
+    final primary = Theme.of(context).colorScheme.primary;
     return TextField(
       controller: controller,
       obscureText: obscure,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon:
-            const Icon(Icons.lock_outline, color: Color(0xFF1E5674)),
+        prefixIcon: Icon(Icons.lock_outline, color: primary),
         suffixIcon: Padding(
           padding: const EdgeInsets.only(right: 8),
           child: IconButton(
@@ -347,7 +360,7 @@ class _ProfilePageState extends State<ProfilePage> {
               obscure
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,
-              color: const Color(0xFF1E5674),
+              color: primary,
             ),
             onPressed: onToggle,
           ),
@@ -411,16 +424,23 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
+    final iconBg = primary.withValues(alpha: 0.1);
+    final iconColor = primary;
+    final titleColor = isDark ? const Color(0xFFE8F0F2) : const Color(0xFF0F2C3F);
+    final subtitleColor = isDark ? Colors.white54 : Colors.black54;
+
     return Row(
       children: [
         Container(
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: const Color(0xFF1E5674).withValues(alpha: 0.1),
+            color: iconBg,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: const Color(0xFF1E5674), size: 20),
+          child: Icon(icon, color: iconColor, size: 20),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -429,15 +449,15 @@ class _SectionHeader extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F2C3F),
+                  color: titleColor,
                 ),
               ),
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                style: TextStyle(fontSize: 12, color: subtitleColor),
               ),
             ],
           ),
@@ -469,19 +489,23 @@ class _ReadOnlyField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final labelColor = isDark ? Colors.white54 : Colors.black54;
+    final valueColor = isDark ? const Color(0xFFE8F0F2) : const Color(0xFF0F2C3F);
+
     return Card(
       child: ListTile(
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         title: Text(
           label,
-          style: const TextStyle(fontSize: 12, color: Colors.black54),
+          style: TextStyle(fontSize: 12, color: labelColor),
         ),
         subtitle: Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
-            color: Color(0xFF0F2C3F),
+            color: valueColor,
             fontWeight: FontWeight.w500,
           ),
         ),
