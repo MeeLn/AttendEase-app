@@ -325,11 +325,12 @@ class _AppShellState extends State<AppShell> {
             ),
           ),
           Divider(height: 1, color: dividerColor),
-          // Bottom section: Profile and Logout
+          // Bottom section: Theme Toggle, Profile and Logout
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
             child: Column(
               children: [
+                ThemeToggle(controller: widget.controller),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
                   child: InkWell(
@@ -376,7 +377,6 @@ class _AppShellState extends State<AppShell> {
                     ),
                   ),
                 ),
-                ThemeToggle(controller: widget.controller),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
                   child: InkWell(

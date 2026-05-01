@@ -21,6 +21,7 @@ dependencies:
   sqflite_common_ffi: ^2.4.0+3
   sqflite_common_ffi_web: ^1.1.1
   shared_preferences: ^2.5.3
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

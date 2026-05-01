@@ -59,7 +59,7 @@ class ThemeToggle extends StatelessWidget {
                         onTap: () => controller.setThemeMode(AppThemeMode.system),
                         child: _SegmentLabel(
                           icon: Icons.devices,
-                          label: 'Sys',
+                          label: 'System',
                           selected: currentMode == AppThemeMode.system,
                           color: textColor,
                         ),

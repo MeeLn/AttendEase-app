@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/state/app_controller.dart';
 import '../../core/widgets/custom_dropdown.dart';
@@ -20,6 +23,9 @@ class _AuthPageState extends State<AuthPage> {
   bool _obscureRegisterPassword = true;
   bool _obscureConfirmPassword = true;
   int? _selectedDepartmentId;
+  XFile? _studentProfilePicture;
+  XFile? _teacherProfilePicture;
+  final _picker = ImagePicker();
 
   final _loginEmail = TextEditingController();
   final _loginPassword = TextEditingController();
@@ -218,6 +224,12 @@ class _AuthPageState extends State<AuthPage> {
           subtitle:
               'New student accounts remain inactive until approved by admin.',
         ),
+        _buildProfilePicturePicker(
+          _studentProfilePicture,
+          () => _pickProfilePicture(true),
+          () => setState(() => _studentProfilePicture = null),
+        ),
+        const SizedBox(height: 12),
         _buildTextField(_studentFirstName, 'First name', Icons.person_outlined),
         const SizedBox(height: 12),
         _buildTextField(_studentLastName, 'Last name', Icons.badge_outlined),
@@ -300,6 +312,12 @@ class _AuthPageState extends State<AuthPage> {
           subtitle:
               'Use this if you need course attendance and reporting access.',
         ),
+        _buildProfilePicturePicker(
+          _teacherProfilePicture,
+          () => _pickProfilePicture(false),
+          () => setState(() => _teacherProfilePicture = null),
+        ),
+        const SizedBox(height: 12),
         _buildTextField(_teacherFirstName, 'First name', Icons.person_outlined),
         const SizedBox(height: 12),
         _buildTextField(_teacherLastName, 'Last name', Icons.badge_outlined),
@@ -454,6 +472,103 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
+  Widget _buildProfilePicturePicker(
+    XFile? selectedFile,
+    VoidCallback onPick,
+    VoidCallback onRemove,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: primary.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: selectedFile != null
+                  ? Image.file(
+                      File(selectedFile.path),
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      width: 48,
+                      height: 48,
+                      color: primary.withValues(alpha: 0.1),
+                      child: Icon(Icons.person_outline, color: primary, size: 24),
+                    ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Profile picture',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    selectedFile != null
+                        ? selectedFile.name
+                        : 'Optional · tap to select',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? Colors.white54 : Colors.black54,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (selectedFile != null)
+              IconButton(
+                icon: Icon(Icons.close, color: primary, size: 20),
+                style: IconButton.styleFrom(
+                  shape: const CircleBorder(),
+                ),
+                onPressed: onRemove,
+              ),
+            Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : Colors.black26,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                icon: Icon(
+                  selectedFile != null
+                      ? Icons.photo_library_rounded
+                      : Icons.add_photo_alternate_outlined,
+                  color: primary,
+                  size: 20,
+                ),
+                style: IconButton.styleFrom(
+                  shape: const CircleBorder(),
+                ),
+                onPressed: onPick,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _submitLogin() async {
     final message = await widget.controller.login(
       email: _loginEmail.text,
@@ -483,6 +598,7 @@ class _AuthPageState extends State<AuthPage> {
       email: _studentEmail.text,
       password: _studentPassword.text,
       confirmPassword: _studentConfirmPassword.text,
+      profilePicture: _studentProfilePicture?.path,
     );
     if (!mounted) {
       return;
@@ -505,6 +621,7 @@ class _AuthPageState extends State<AuthPage> {
       email: _teacherEmail.text,
       password: _teacherPassword.text,
       confirmPassword: _teacherConfirmPassword.text,
+      profilePicture: _teacherProfilePicture?.path,
     );
     if (!mounted) {
       return;
@@ -528,6 +645,7 @@ class _AuthPageState extends State<AuthPage> {
     _studentEmail.clear();
     _studentPassword.clear();
     _studentConfirmPassword.clear();
+    _studentProfilePicture = null;
   }
 
   void _clearTeacherFields() {
@@ -536,6 +654,31 @@ class _AuthPageState extends State<AuthPage> {
     _teacherEmail.clear();
     _teacherPassword.clear();
     _teacherConfirmPassword.clear();
+    _teacherProfilePicture = null;
+  }
+
+  Future<void> _pickProfilePicture(bool isStudent) async {
+    try {
+      final picked = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+      if (picked != null) {
+        setState(() {
+          if (isStudent) {
+            _studentProfilePicture = picked;
+          } else {
+            _teacherProfilePicture = picked;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        _showMessage('Image picker not supported on this platform.');
+      }
+    }
   }
 
   void _showMessage(String message) {

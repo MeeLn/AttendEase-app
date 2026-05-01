@@ -200,7 +200,9 @@ class _CoursesPageState extends State<CoursesPage> {
           ),
           if (_formExpanded) const SizedBox(height: 16),
           if (widget.controller.courses.isNotEmpty)
-            _SectionHeader(label: 'All Courses'),
+            _SectionHeader(label: 'All Courses')
+          else
+            _EmptyState(icon: Icons.menu_book_outlined, message: 'No courses added yet.'),
           ...widget.controller.courses.map(
             (course) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -326,7 +328,9 @@ class _DepartmentsPageState extends State<DepartmentsPage> {
           ),
           if (_formExpanded) const SizedBox(height: 16),
           if (widget.controller.departments.isNotEmpty)
-            _SectionHeader(label: 'All Departments'),
+            _SectionHeader(label: 'All Departments')
+          else
+            _EmptyState(icon: Icons.account_tree_outlined, message: 'No departments added yet.'),
           ...widget.controller.departments.map(
             (department) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -374,60 +378,184 @@ class _DepartmentsPageState extends State<DepartmentsPage> {
   }
 }
 
-class UsersPage extends StatelessWidget {
+class UsersPage extends StatefulWidget {
   const UsersPage({super.key, required this.controller});
 
   final AppController controller;
 
   @override
+  State<UsersPage> createState() => _UsersPageState();
+}
+
+class _UsersPageState extends State<UsersPage> {
+  String _searchQuery = '';
+  bool? _showInactive;
+  UserRole? _roleFilter;
+  bool _formExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    var users = widget.controller.users;
+
+    if (_roleFilter != null) {
+      users = users.where((user) => user.role == _roleFilter).toList();
+    }
+
+    if (_showInactive == false) {
+      users = users.where((user) => user.isActive).toList();
+    } else if (_showInactive == true) {
+      users = users.where((user) => !user.isActive).toList();
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      users = users.where((user) {
+        final query = _searchQuery.toLowerCase();
+        return user.firstName.toLowerCase().contains(query) ||
+            user.email.toLowerCase().contains(query) ||
+            (user.department?.toLowerCase().contains(query) ?? false) ||
+            (user.rollNumber?.toLowerCase().contains(query) ?? false) ||
+            user.role.name.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    users = List.from(users)
+      ..sort((a, b) => a.fullName.compareTo(b.fullName));
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _PageHeader(
+          _PageHeader(
             icon: Icons.people_alt_outlined,
             title: 'Users',
             subtitle: 'Review, approve, and manage all registered users.',
+            onToggle: () => setState(() => _formExpanded = !_formExpanded),
+            formExpanded: _formExpanded,
           ),
-          if (controller.users.isNotEmpty)
-            _SectionHeader(label: 'All Users'),
-          ...controller.users.map((user) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Card(
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 8,
-                ),
-                title: Text(user.fullName),
-                subtitle: Text(
-                  '${user.role.name.toUpperCase()} • ${user.email}${user.department != null ? ' • ${user.department}' : ''}',
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Switch(
-                      value: user.isActive,
-                      onChanged: (_) async => controller.toggleUserStatus(user.id),
-                    ),
-                    IconButton(
-                    icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
-                    style: IconButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            child: _formExpanded
+                ? Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          TextField(
+                            decoration: const InputDecoration(
+                              labelText: 'Search by Name, Email, Department, Roll or Role',
+                              prefixIcon: Icon(Icons.search),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          _FilterRow(
+                            icon: Icons.filter_alt_outlined,
+                            label: 'Status',
+                            child: SegmentedButton<bool?>(
+                              segments: const [
+                                ButtonSegment(value: false, label: Text('A'), icon: Icon(Icons.check_circle_outline)),
+                                ButtonSegment(value: true, label: Text('P'), icon: Icon(Icons.pending_outlined)),
+                                ButtonSegment(value: null, label: Text('B'), icon: Icon(Icons.filter_list)),
+                              ],
+                              selected: {_showInactive},
+                              onSelectionChanged: (selection) {
+                                setState(() {
+                                  _showInactive = selection.first;
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _FilterRow(
+                            icon: Icons.badge_outlined,
+                            label: 'Role',
+                            child: SegmentedButton<UserRole?>(
+                              segments: const [
+                                ButtonSegment(value: UserRole.student, label: Text('S'), icon: Icon(Icons.school_outlined)),
+                                ButtonSegment(value: UserRole.teacher, label: Text('T'), icon: Icon(Icons.co_present_outlined)),
+                                ButtonSegment(value: null, label: Text('B'), icon: Icon(Icons.filter_list)),
+                              ],
+                              selected: {_roleFilter},
+                              onSelectionChanged: (selection) {
+                                setState(() {
+                                  _roleFilter = selection.first;
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Text(
+                                widget.controller.users.isNotEmpty
+                                    ? 'Total: ${widget.controller.users.length} user(s)'
+                                    : 'No users',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    onPressed: () => controller.deleteUser(user.id),
-                    ),
-                  ],
-                ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+          if (_formExpanded) const SizedBox(height: 16),
+          if (users.isEmpty && _searchQuery.isEmpty && _roleFilter == null && _showInactive == null)
+            const _EmptyState(
+              icon: Icons.people_alt_outlined,
+              message: 'No users registered yet.',
+            )
+          else if (users.isEmpty)
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Text('No users match your filters.'),
               ),
-            ),
-          );
-        }),
+            )
+          else
+            ...users.map((user) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Card(
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
+                    title: Text(user.fullName),
+                    subtitle: Text(
+                      '${user.role.name.toUpperCase()} • ${user.email}${user.department != null ? ' • ${user.department}' : ''}',
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Switch(
+                          value: user.isActive,
+                          onChanged: (_) async => widget.controller.toggleUserStatus(user.id),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+                          style: IconButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () => widget.controller.deleteUser(user.id),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
         ],
       ),
     );
@@ -530,6 +658,8 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
                 ),
               ),
             )
+          else if (students.isEmpty)
+            _EmptyState(icon: Icons.groups_outlined, message: 'No active students to show.')
           else
             ...students.map(
               (student) => Padding(
@@ -1023,6 +1153,87 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.icon, required this.message});
+
+  final IconData icon;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 48,
+              color: isDark ? Colors.white24 : Colors.black26,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? Colors.white54 : Colors.black54,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterRow extends StatelessWidget {
+  const _FilterRow({required this.icon, required this.label, required this.child});
+
+  final IconData icon;
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: primary, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: child),
+      ],
+    );
+  }
+}
+
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.label});
 
@@ -1064,10 +1275,13 @@ class _RecordsTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (records.isEmpty) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Text('No attendance records found.'),
+      return Card(
+        child: SizedBox(
+          width: double.infinity,
+          child: const Padding(
+            padding: EdgeInsets.all(20),
+            child: Text('No attendance records found.'),
+          ),
         ),
       );
     }
@@ -1076,11 +1290,12 @@ class _RecordsTable extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: DataTable(
+          columnSpacing: 32,
           columns: const [
-            DataColumn(label: Text('Student')),
-            DataColumn(label: Text('Course')),
-            DataColumn(label: Text('Date')),
-            DataColumn(label: Text('Method')),
+            DataColumn(label: Text('Student'), headingRowAlignment: MainAxisAlignment.start, tooltip: 'Student Name'),
+            DataColumn(label: Text('Course'), headingRowAlignment: MainAxisAlignment.start, tooltip: 'Course Name'),
+            DataColumn(label: Text('Date'), headingRowAlignment: MainAxisAlignment.start, tooltip: 'Record Date'),
+            DataColumn(label: Text('Method'), headingRowAlignment: MainAxisAlignment.start, tooltip: 'Attendance Method'),
           ],
           rows: records.map((record) {
             final student = controller.studentById(record.studentId);
@@ -1089,10 +1304,10 @@ class _RecordsTable extends StatelessWidget {
                 '${record.recordedAt.year}-${record.recordedAt.month.toString().padLeft(2, '0')}-${record.recordedAt.day.toString().padLeft(2, '0')}';
             return DataRow(
               cells: [
-                DataCell(Text(student.fullName)),
-                DataCell(Text(course.name)),
-                DataCell(Text(date)),
-                DataCell(Text(record.method)),
+                DataCell(SizedBox(width: 180, child: Text(student.fullName))),
+                DataCell(SizedBox(width: 150, child: Text(course.name))),
+                DataCell(SizedBox(width: 120, child: Text(date))),
+                DataCell(SizedBox(width: 150, child: Text(record.method))),
               ],
             );
           }).toList(),

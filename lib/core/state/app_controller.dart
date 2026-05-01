@@ -117,6 +117,7 @@ class AppController extends ChangeNotifier {
     required String email,
     required String password,
     required String confirmPassword,
+    String? profilePicture,
   }) async {
     final validation = _validateCommonRegistration(
       firstName: firstName,
@@ -145,6 +146,7 @@ class AppController extends ChangeNotifier {
       rollNumber: rollNumber.trim(),
       email: email.trim().toLowerCase(),
       password: password,
+      profilePicture: profilePicture,
     );
     await _reloadData();
     notifyListeners();
@@ -157,6 +159,7 @@ class AppController extends ChangeNotifier {
     required String email,
     required String password,
     required String confirmPassword,
+    String? profilePicture,
   }) async {
     final validation = _validateCommonRegistration(
       firstName: firstName,
@@ -177,6 +180,7 @@ class AppController extends ChangeNotifier {
       lastName: lastName.trim(),
       email: email.trim().toLowerCase(),
       password: password,
+      profilePicture: profilePicture,
     );
     await _reloadData();
     notifyListeners();
@@ -252,6 +256,7 @@ class AppController extends ChangeNotifier {
     String? rollNumber,
     String? newPassword,
     String? confirmPassword,
+    String? profilePicture,
   }) async {
     if (firstName.trim().isEmpty || lastName.trim().isEmpty || email.trim().isEmpty) {
       return 'First name, last name and email are required.';
@@ -271,6 +276,7 @@ class AppController extends ChangeNotifier {
       department: department,
       rollNumber: rollNumber,
       newPassword: (newPassword != null && newPassword.isNotEmpty) ? newPassword : null,
+      profilePicture: profilePicture,
     );
     await _reloadData();
     notifyListeners();

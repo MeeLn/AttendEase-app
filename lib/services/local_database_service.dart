@@ -73,6 +73,7 @@ class LocalDatabaseService {
     required String rollNumber,
     required String email,
     required String password,
+    String? profilePicture,
   }) async {
     final db = await database;
     return db.insert('users', {
@@ -84,7 +85,8 @@ class LocalDatabaseService {
       'department': department,
       'roll_number': rollNumber,
       'is_active': 0,
-      'has_face_registered': 0,
+      // ignore: use_null_aware_elements
+      if (profilePicture != null) 'profile_picture': profilePicture,
     });
   }
 
@@ -93,6 +95,7 @@ class LocalDatabaseService {
     required String lastName,
     required String email,
     required String password,
+    String? profilePicture,
   }) async {
     final db = await database;
     return db.insert('users', {
@@ -103,6 +106,8 @@ class LocalDatabaseService {
       'password': password,
       'is_active': 0,
       'has_face_registered': 0,
+      // ignore: use_null_aware_elements
+      if (profilePicture != null) 'profile_picture': profilePicture,
     });
   }
 
@@ -139,6 +144,7 @@ class LocalDatabaseService {
     String? department,
     String? rollNumber,
     String? newPassword,
+    String? profilePicture,
   }) async {
     final db = await database;
     final data = <String, dynamic>{
@@ -148,6 +154,9 @@ class LocalDatabaseService {
       if (department != null) 'department': department.trim(),
       if (rollNumber != null) 'roll_number': rollNumber.trim(),
       if (newPassword != null && newPassword.isNotEmpty) 'password': newPassword,
+      'profile_picture': profilePicture != null
+          ? (profilePicture.isEmpty ? null : profilePicture)
+          : null,
     };
     await db.update('users', data, where: 'id = ?', whereArgs: [userId]);
   }

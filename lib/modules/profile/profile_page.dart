@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/models/entities.dart';
 import '../../core/state/app_controller.dart';
@@ -23,6 +26,10 @@ class _ProfilePageState extends State<ProfilePage> {
   late final TextEditingController _rollNumber;
   late final TextEditingController _newPassword;
   late final TextEditingController _confirmPassword;
+
+  XFile? _newProfilePicture;
+  bool _profilePictureRemoved = false;
+  final _picker = ImagePicker();
 
   bool _obscureNew = true;
   bool _obscureConfirm = true;
@@ -193,6 +200,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               padding: const EdgeInsets.all(20),
                               child: Column(
                                 children: [
+                                  _buildProfilePicturePicker(context, user!),
+                                  const SizedBox(height: 16),
                                   Row(
                                     children: [
                                       Expanded(
@@ -369,6 +378,141 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Future<void> _pickProfilePicture() async {
+    try {
+      final picked = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+      if (picked != null) {
+        setState(() => _newProfilePicture = picked);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text('Image picker not supported on this platform.')),
+          );
+      }
+    }
+  }
+
+  Widget _buildProfilePicturePicker(BuildContext context, UserAccount user) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
+    final hasNewPicture = _newProfilePicture != null;
+    final hasExistingPicture = user.profilePicture != null && _newProfilePicture == null;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: primary.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: hasNewPicture
+                  ? Image.file(
+                      File(_newProfilePicture!.path),
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                    )
+                  : hasExistingPicture
+                      ? Image.network(
+                          user.profilePicture!,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            width: 48,
+                            height: 48,
+                            color: primary.withValues(alpha: 0.1),
+                            child: Icon(Icons.person_outline, color: primary, size: 24),
+                          ),
+                        )
+                      : Container(
+                          width: 48,
+                          height: 48,
+                          color: primary.withValues(alpha: 0.1),
+                          child: Icon(Icons.person_outline, color: primary, size: 24),
+                        ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Profile picture',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    hasNewPicture
+                        ? _newProfilePicture!.name
+                        : hasExistingPicture
+                            ? 'Current profile picture'
+                            : 'Optional · tap to select',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? Colors.white54 : Colors.black54,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (hasNewPicture)
+              IconButton(
+                icon: Icon(Icons.close, color: primary, size: 20),
+                style: IconButton.styleFrom(
+                  shape: const CircleBorder(),
+                ),
+                onPressed: () => setState(() {
+                  _newProfilePicture = null;
+                  _profilePictureRemoved = true;
+                }),
+              ),
+            Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : Colors.black26,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                icon: Icon(
+                  hasNewPicture
+                      ? Icons.photo_library_rounded
+                      : Icons.add_photo_alternate_outlined,
+                  color: primary,
+                  size: 20,
+                ),
+                style: IconButton.styleFrom(
+                  shape: const CircleBorder(),
+                ),
+                onPressed: _pickProfilePicture,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _save() async {
     final user = widget.controller.currentUser;
     if (user == null) return;
@@ -386,6 +530,11 @@ class _ProfilePageState extends State<ProfilePage> {
           _newPassword.text.isNotEmpty ? _newPassword.text : null,
       confirmPassword:
           _confirmPassword.text.isNotEmpty ? _confirmPassword.text : null,
+      profilePicture: _newProfilePicture != null
+          ? _newProfilePicture!.path
+          : _profilePictureRemoved
+              ? ''
+              : null,
     );
 
     if (!mounted) return;
