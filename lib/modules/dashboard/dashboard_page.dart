@@ -514,10 +514,13 @@ class _UsersPageState extends State<UsersPage> {
               message: 'No users registered yet.',
             )
           else if (users.isEmpty)
-            const Card(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Text('No users match your filters.'),
+            Card(
+              child: SizedBox(
+                width: double.infinity,
+                child: const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text('No users match your filters.'),
+                ),
               ),
             )
           else
@@ -650,11 +653,14 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
           ),
           if (_formExpanded) const SizedBox(height: 16),
           if (selectedCourse == null || !selectedCourse.isActive)
-            const Card(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Text(
-                  'This course is not active. Activate it above to start taking attendance.',
+            Card(
+              child: SizedBox(
+                width: double.infinity,
+                child: const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text(
+                    'This course is not active. Activate it above to start taking attendance.',
+                  ),
                 ),
               ),
             )
@@ -1162,26 +1168,29 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 48,
-              color: isDark ? Colors.white24 : Colors.black26,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.white54 : Colors.black54,
+    return Card(
+      child: SizedBox(
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 48,
+                color: isDark ? Colors.white24 : Colors.black26,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 12),
+              Text(
+                message,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white54 : Colors.black54,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
