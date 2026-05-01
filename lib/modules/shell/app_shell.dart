@@ -47,11 +47,14 @@ class _AppShellState extends State<AppShell> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _Header(
-                title: pageTitle,
-                user: user,
-                role: session.role,
-                isWide: true, // Always show the menu button for consistency
+              SafeArea(
+                bottom: false,
+                child: _Header(
+                  title: pageTitle,
+                  user: user,
+                  role: session.role,
+                  isWide: true, // Always show the menu button for consistency
+                ),
               ),
               Expanded(
                 child: AnimatedSwitcher(
