@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/state/app_controller.dart';
+import '../../core/widgets/custom_dropdown.dart';
 
 enum _AuthMode { login, registerStudent, registerTeacher }
 
@@ -18,12 +19,12 @@ class _AuthPageState extends State<AuthPage> {
   bool _obscureLoginPassword = true;
   bool _obscureRegisterPassword = true;
   bool _obscureConfirmPassword = true;
+  int? _selectedDepartmentId;
 
   final _loginEmail = TextEditingController();
   final _loginPassword = TextEditingController();
   final _studentFirstName = TextEditingController();
   final _studentLastName = TextEditingController();
-  final _studentDepartment = TextEditingController();
   final _studentRoll = TextEditingController();
   final _studentEmail = TextEditingController();
   final _studentPassword = TextEditingController();
@@ -35,12 +36,18 @@ class _AuthPageState extends State<AuthPage> {
   final _teacherConfirmPassword = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onControllerChanged);
+  }
+
+  @override
   void dispose() {
+    widget.controller.removeListener(_onControllerChanged);
     _loginEmail.dispose();
     _loginPassword.dispose();
     _studentFirstName.dispose();
     _studentLastName.dispose();
-    _studentDepartment.dispose();
     _studentRoll.dispose();
     _studentEmail.dispose();
     _studentPassword.dispose();
@@ -51,6 +58,12 @@ class _AuthPageState extends State<AuthPage> {
     _teacherPassword.dispose();
     _teacherConfirmPassword.dispose();
     super.dispose();
+  }
+
+  void _onControllerChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -209,7 +222,24 @@ class _AuthPageState extends State<AuthPage> {
         const SizedBox(height: 12),
         _buildTextField(_studentLastName, 'Last name', Icons.badge_outlined),
         const SizedBox(height: 12),
-        _buildTextField(_studentDepartment, 'Department', Icons.school_outlined),
+        CustomDropdown<int>(
+          items: widget.controller.departments
+              .map(
+                (department) => CustomDropdownItem(
+                  label: department.name,
+                  value: department.id,
+                ),
+              )
+              .toList(),
+          hintText: 'Department',
+          icon: Icons.school_outlined,
+          selectedValue: _selectedDepartmentId,
+          onChanged: (value) {
+            setState(() {
+              _selectedDepartmentId = value;
+            });
+          },
+        ),
         const SizedBox(height: 12),
         _buildTextField(_studentRoll, 'Roll number', Icons.numbers_outlined),
         const SizedBox(height: 12),
@@ -437,10 +467,17 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   Future<void> _submitStudentRegistration() async {
+    if (_selectedDepartmentId == null) {
+      _showMessage('Please select a department.');
+      return;
+    }
+    final department = widget.controller.departments
+        .firstWhere((d) => d.id == _selectedDepartmentId)
+        .name;
     final message = await widget.controller.registerStudent(
       firstName: _studentFirstName.text,
       lastName: _studentLastName.text,
-      department: _studentDepartment.text,
+      department: department,
       rollNumber: _studentRoll.text,
       email: _studentEmail.text,
       password: _studentPassword.text,
@@ -485,7 +522,7 @@ class _AuthPageState extends State<AuthPage> {
   void _clearStudentFields() {
     _studentFirstName.clear();
     _studentLastName.clear();
-    _studentDepartment.clear();
+    _selectedDepartmentId = null;
     _studentRoll.clear();
     _studentEmail.clear();
     _studentPassword.clear();

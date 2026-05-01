@@ -24,16 +24,18 @@ class _AppShellState extends State<AppShell> {
     final destinations = _destinationsForRole(session.role);
     final pages = _pagesForRole(session.role);
     final isWide = MediaQuery.sizeOf(context).width >= 1000;
+    final profileIndex = destinations.length - 1;
+    final isProfile = _index == profileIndex;
 
     if (_index >= pages.length) {
       _index = 0;
     }
 
     final currentPage = pages[_index];
-    final currentDestination = destinations[_index];
+    final pageTitle = isProfile ? 'Profile' : (_index == 0 ? 'AttendEase' : destinations[_index].label);
 
     return Scaffold(
-      drawer: _buildSidebar(context, destinations, session, user),
+      drawer: _buildSidebar(context, destinations, session, user, profileIndex),
       body: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
@@ -44,7 +46,7 @@ class _AppShellState extends State<AppShell> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _Header(
-                title: _index == 0 ? 'AttendEase' : currentDestination.label,
+                title: pageTitle,
                 user: user,
                 role: session.role,
                 isWide: true, // Always show the menu button for consistency
@@ -82,7 +84,7 @@ class _AppShellState extends State<AppShell> {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: destinations.asMap().entries.map((entry) {
+                children: destinations.sublist(0, profileIndex).asMap().entries.map((entry) {
                   final index = entry.key;
                   final dest = entry.value;
                   final isSelected = _index == index;
@@ -145,6 +147,7 @@ class _AppShellState extends State<AppShell> {
     List<_ShellDestination> destinations,
     Session session,
     UserAccount? user,
+    int profileIndex,
   ) {
     return Container(
       width: 280,
@@ -249,7 +252,7 @@ class _AppShellState extends State<AppShell> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              itemCount: destinations.length,
+              itemCount: profileIndex,
               itemBuilder: (context, index) {
                 final destination = destinations[index];
                 final isSelected = _index == index;
@@ -305,36 +308,81 @@ class _AppShellState extends State<AppShell> {
           const Divider(height: 1, color: Colors.black12),
           // Bottom section: Profile and Logout
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
             child: Column(
               children: [
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  leading: const Icon(Icons.person_outline, color: Colors.black54),
-                  title: const Text(
-                    'Profile',
-                    style: TextStyle(color: Colors.black87),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ProfilePage(
-                          controller: widget.controller,
-                        ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                  child: InkWell(
+                    onTap: () {
+                      setState(() => _index = profileIndex);
+                      if (Navigator.canPop(context)) Navigator.pop(context);
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                    );
-                  },
-                ),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  leading: const Icon(Icons.logout, color: Colors.redAccent),
-                  title: const Text(
-                    'Logout',
-                    style: TextStyle(color: Colors.redAccent),
+                      decoration: BoxDecoration(
+                        color: _index == profileIndex
+                            ? const Color(0xFF1E5674).withValues(alpha: 0.12)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.person_outline,
+                            color: _index == profileIndex
+                                ? const Color(0xFF1E5674)
+                                : Colors.black54,
+                          ),
+                          const SizedBox(width: 16),
+                          Text(
+                            'Profile',
+                            style: TextStyle(
+                              color: _index == profileIndex
+                                  ? const Color(0xFF1E5674)
+                                  : Colors.black87,
+                              fontWeight: _index == profileIndex
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  onTap: widget.controller.logout,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                  child: InkWell(
+                    onTap: widget.controller.logout,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.logout, color: Colors.redAccent),
+                          const SizedBox(width: 16),
+                          const Text(
+                            'Logout',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.normal,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -352,18 +400,21 @@ class _AppShellState extends State<AppShell> {
           _ShellDestination('Courses', Icons.menu_book_outlined),
           _ShellDestination('Departments', Icons.account_tree_outlined),
           _ShellDestination('Users', Icons.manage_accounts_outlined),
+          _ShellDestination('Profile', Icons.person_outline),
         ];
       case UserRole.teacher:
         return const [
           _ShellDestination('Overview', Icons.dashboard_outlined),
           _ShellDestination('Attendance', Icons.play_circle_outline),
           _ShellDestination('Records', Icons.fact_check_outlined),
+          _ShellDestination('Profile', Icons.person_outline),
         ];
       case UserRole.student:
         return const [
           _ShellDestination('Overview', Icons.space_dashboard_outlined),
           _ShellDestination('Face ID', Icons.face_retouching_natural_outlined),
           _ShellDestination('Attendance', Icons.event_available_outlined),
+          _ShellDestination('Profile', Icons.person_outline),
         ];
     }
   }
@@ -376,18 +427,21 @@ class _AppShellState extends State<AppShell> {
           CoursesPage(controller: widget.controller),
           DepartmentsPage(controller: widget.controller),
           UsersPage(controller: widget.controller),
+          ProfilePage(controller: widget.controller),
         ];
       case UserRole.teacher:
         return [
           DashboardPage(controller: widget.controller, role: role),
           TeacherAttendancePage(controller: widget.controller),
           TeacherRecordsPage(controller: widget.controller),
+          ProfilePage(controller: widget.controller),
         ];
       case UserRole.student:
         return [
           DashboardPage(controller: widget.controller, role: role),
           StudentFacePage(controller: widget.controller),
           StudentAttendancePage(controller: widget.controller),
+          ProfilePage(controller: widget.controller),
         ];
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/models/entities.dart';
 import '../../core/state/app_controller.dart';
+import '../../core/widgets/custom_dropdown.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({
@@ -142,6 +143,7 @@ class CoursesPage extends StatefulWidget {
 class _CoursesPageState extends State<CoursesPage> {
   final _nameController = TextEditingController();
   final _creditsController = TextEditingController();
+  bool _formExpanded = false;
 
   @override
   void dispose() {
@@ -157,39 +159,46 @@ class _CoursesPageState extends State<CoursesPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _PageHeader(
+          _PageHeader(
             icon: Icons.menu_book_outlined,
             title: 'Courses',
             subtitle: 'Manage and activate courses for attendance.',
+            onToggle: () => setState(() => _formExpanded = !_formExpanded),
+            formExpanded: _formExpanded,
           ),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Course name'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _creditsController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Credits'),
-                  ),
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: FilledButton(
-                      onPressed: _addCourse,
-                      child: const Text('Add course'),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            child: _formExpanded
+                ? Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: _nameController,
+                            decoration: const InputDecoration(labelText: 'Course name'),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: _creditsController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: 'Credits'),
+                          ),
+                          const SizedBox(height: 16),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: FilledButton(
+                              onPressed: _addCourse,
+                              child: const Text('Add course'),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
+                  )
+                : const SizedBox.shrink(),
           ),
-          const SizedBox(height: 16),
+          if (_formExpanded) const SizedBox(height: 16),
           if (widget.controller.courses.isNotEmpty)
             const Padding(
               padding: EdgeInsets.only(bottom: 8),
@@ -275,6 +284,7 @@ class DepartmentsPage extends StatefulWidget {
 
 class _DepartmentsPageState extends State<DepartmentsPage> {
   final _departmentController = TextEditingController();
+  bool _formExpanded = false;
 
   @override
   void dispose() {
@@ -289,34 +299,41 @@ class _DepartmentsPageState extends State<DepartmentsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _PageHeader(
+          _PageHeader(
             icon: Icons.account_tree_outlined,
             title: 'Departments',
             subtitle: 'Organise academic departments for student grouping.',
+            onToggle: () => setState(() => _formExpanded = !_formExpanded),
+            formExpanded: _formExpanded,
           ),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _departmentController,
-                      decoration: const InputDecoration(
-                        labelText: 'Department name',
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            child: _formExpanded
+                ? Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _departmentController,
+                              decoration: const InputDecoration(
+                                labelText: 'Department name',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          FilledButton(
+                            onPressed: _addDepartment,
+                            child: const Text('Add'),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  FilledButton(
-                    onPressed: _addDepartment,
-                    child: const Text('Add'),
-                  ),
-                ],
-              ),
-            ),
+                  )
+                : const SizedBox.shrink(),
           ),
-          const SizedBox(height: 16),
+          if (_formExpanded) const SizedBox(height: 16),
           if (widget.controller.departments.isNotEmpty)
             const Padding(
               padding: EdgeInsets.only(bottom: 8),
@@ -455,6 +472,7 @@ class TeacherAttendancePage extends StatefulWidget {
 
 class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
   int? _selectedCourseId;
+  bool _formExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -475,55 +493,61 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _PageHeader(
+          _PageHeader(
             icon: Icons.how_to_reg_outlined,
             title: 'Take Attendance',
             subtitle: 'Select a course and mark students as present.',
+            onToggle: () => setState(() => _formExpanded = !_formExpanded),
+            formExpanded: _formExpanded,
           ),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  DropdownButtonFormField<int>(
-                    initialValue: _selectedCourseId,
-                    items: courses
-                        .map(
-                          (course) => DropdownMenuItem(
-                            value: course.id,
-                            child: Text(
-                              '${course.name} (${course.credits} credits)',
-                            ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            child: _formExpanded
+                ? Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          CustomDropdown<int>(
+                            items: courses
+                                .map(
+                                  (course) => CustomDropdownItem(
+                                    label: '${course.name} (${course.credits} credits)',
+                                    value: course.id,
+                                  ),
+                                )
+                                .toList(),
+                            hintText: 'Select course',
+                            icon: Icons.menu_book_outlined,
+                            selectedValue: _selectedCourseId,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedCourseId = value;
+                              });
+                            },
                           ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedCourseId = value;
-                      });
-                    },
-                    decoration: const InputDecoration(labelText: 'Select course'),
-                  ),
-                  if (selectedCourse != null) ...[
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Text('Course Attendance Status:'),
-                        const Spacer(),
-                        Switch(
-                          value: selectedCourse.isActive,
-                          onChanged: (_) async =>
-                              widget.controller.toggleCourseStatus(selectedCourse.id),
-                        ),
-                        Text(selectedCourse.isActive ? 'Active' : 'Inactive'),
-                      ],
+                          if (selectedCourse != null) ...[
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                const Text('Course Attendance Status:'),
+                                const Spacer(),
+                                Switch(
+                                  value: selectedCourse.isActive,
+                                  onChanged: (_) async =>
+                                      widget.controller.toggleCourseStatus(selectedCourse.id),
+                                ),
+                                Text(selectedCourse.isActive ? 'Active' : 'Inactive'),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
-                  ],
-                ],
-              ),
-            ),
+                  )
+                : const SizedBox.shrink(),
           ),
-          const SizedBox(height: 16),
+          if (_formExpanded) const SizedBox(height: 16),
           if (selectedCourse == null || !selectedCourse.isActive)
             const Card(
               child: Padding(
@@ -590,6 +614,7 @@ class TeacherRecordsPage extends StatefulWidget {
 class _TeacherRecordsPageState extends State<TeacherRecordsPage> {
   int? _selectedCourseId;
   String _searchQuery = '';
+  bool _formExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -614,50 +639,58 @@ class _TeacherRecordsPageState extends State<TeacherRecordsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _PageHeader(
+          _PageHeader(
             icon: Icons.fact_check_outlined,
             title: 'Attendance Records',
             subtitle: 'Filter and search all course attendance logs.',
+            onToggle: () => setState(() => _formExpanded = !_formExpanded),
+            formExpanded: _formExpanded,
           ),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  DropdownButtonFormField<int>(
-                    initialValue: _selectedCourseId,
-                    items: courses
-                        .map(
-                          (course) => DropdownMenuItem(
-                            value: course.id,
-                            child: Text(course.name),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            child: _formExpanded
+                ? Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          CustomDropdown<int>(
+                            items: courses
+                                .map(
+                                  (course) => CustomDropdownItem(
+                                    label: course.name,
+                                    value: course.id,
+                                  ),
+                                )
+                                .toList(),
+                            hintText: 'Course',
+                            icon: Icons.menu_book_outlined,
+                            selectedValue: _selectedCourseId,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedCourseId = value;
+                              });
+                            },
                           ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedCourseId = value;
-                      });
-                    },
-                    decoration: const InputDecoration(labelText: 'Course'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Search by Student Name or Roll Number',
-                      prefixIcon: Icon(Icons.search),
+                          const SizedBox(height: 16),
+                          TextField(
+                            decoration: const InputDecoration(
+                              labelText: 'Search by Student Name or Roll Number',
+                              prefixIcon: Icon(Icons.search),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
+                  )
+                : const SizedBox.shrink(),
           ),
-          const SizedBox(height: 16),
+          if (_formExpanded) const SizedBox(height: 16),
           _RecordsTable(controller: widget.controller, records: records),
         ],
       ),
@@ -665,115 +698,129 @@ class _TeacherRecordsPageState extends State<TeacherRecordsPage> {
   }
 }
 
-class StudentFacePage extends StatelessWidget {
+class StudentFacePage extends StatefulWidget {
   const StudentFacePage({super.key, required this.controller});
 
   final AppController controller;
 
   @override
+  State<StudentFacePage> createState() => _StudentFacePageState();
+}
+
+class _StudentFacePageState extends State<StudentFacePage> {
+  bool _formExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    final user = controller.currentUser!;
+    final user = widget.controller.currentUser!;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _PageHeader(
+          _PageHeader(
             icon: Icons.face_outlined,
             title: 'Face Profile',
             subtitle: 'Register your biometric profile for attendance verification.',
+            onToggle: () => setState(() => _formExpanded = !_formExpanded),
+            formExpanded: _formExpanded,
           ),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer,
-                    child: const Icon(Icons.face_retouching_natural_outlined),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user.fullName,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          user.hasFaceRegistered
-                              ? 'Face profile ready for attendance confirmation.'
-                              : 'No face profile on file yet.',
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'This flow now launches the native Android camera pipeline from Flutter, detects a face with ML Kit, and stores a MobileFaceNet-ready 112x112 face crop for later verification.',
-                style: TextStyle(height: 1.6),
-              ),
-              const SizedBox(height: 20),
-              FilledButton.icon(
-                onPressed: () async {
-                  if (user.hasFaceRegistered) {
-                    final proceed = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Face Already Registered'),
-                        content: const Text(
-                          'Your face is already registered. Do you want to re-register your face?',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('No'),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            child: _formExpanded
+                ? Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 28,
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primaryContainer,
+                                child: const Icon(Icons.face_retouching_natural_outlined),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      user.fullName,
+                                      style: Theme.of(context).textTheme.titleLarge,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      user.hasFaceRegistered
+                                          ? 'Face profile ready for attendance confirmation.'
+                                          : 'No face profile on file yet.',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Yes'),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'This flow now launches the native Android camera pipeline from Flutter, detects a face with ML Kit, and stores a MobileFaceNet-ready 112x112 face crop for later verification.',
+                            style: TextStyle(height: 1.6),
+                          ),
+                          const SizedBox(height: 20),
+                          FilledButton.icon(
+                            onPressed: () async {
+                              if (user.hasFaceRegistered) {
+                                final proceed = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Face Already Registered'),
+                                    content: const Text(
+                                      'Your face is already registered. Do you want to re-register your face?',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, false),
+                                        child: const Text('No'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, true),
+                                        child: const Text('Yes'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (proceed != true) {
+                                  return;
+                                }
+                              }
+
+                              final message =
+                                  await widget.controller.registerFaceForCurrentStudent();
+                              if (!context.mounted) {
+                                return;
+                              }
+                              ScaffoldMessenger.of(context)
+                                ..hideCurrentSnackBar()
+                                ..showSnackBar(
+                                  SnackBar(content: Text(message ?? 'Face registered.')),
+                                );
+                            },
+                            icon: const Icon(Icons.camera_alt_outlined),
+                            label: Text(
+                              user.hasFaceRegistered
+                                  ? 'Refresh face profile'
+                                  : 'Register face profile',
+                            ),
                           ),
                         ],
                       ),
-                    );
-                    if (proceed != true) {
-                      return;
-                    }
-                  }
-
-                  final message =
-                      await controller.registerFaceForCurrentStudent();
-                  if (!context.mounted) {
-                    return;
-                  }
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      SnackBar(content: Text(message ?? 'Face registered.')),
-                    );
-                },
-                icon: const Icon(Icons.camera_alt_outlined),
-                label: Text(
-                  user.hasFaceRegistered
-                      ? 'Refresh face profile'
-                      : 'Register face profile',
-                ),
-              ),
-            ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
-        ),
-      ),
         ],
       ),
     );
@@ -791,6 +838,7 @@ class StudentAttendancePage extends StatefulWidget {
 
 class _StudentAttendancePageState extends State<StudentAttendancePage> {
   int? _selectedCourseId;
+  bool _formExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -803,51 +851,57 @@ class _StudentAttendancePageState extends State<StudentAttendancePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _PageHeader(
+          _PageHeader(
             icon: Icons.event_available_outlined,
             title: 'My Attendance',
             subtitle: 'View your attendance records and mark yourself present.',
+            onToggle: () => setState(() => _formExpanded = !_formExpanded),
+            formExpanded: _formExpanded,
           ),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  DropdownButtonFormField<int>(
-                    initialValue: _selectedCourseId,
-                    items: courses
-                        .map(
-                          (course) => DropdownMenuItem(
-                            value: course.id,
-                            child: Text(course.name),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            child: _formExpanded
+                ? Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          CustomDropdown<int>(
+                            items: courses
+                                .map(
+                                  (course) => CustomDropdownItem(
+                                    label: course.name,
+                                    value: course.id,
+                                  ),
+                                )
+                                .toList(),
+                            hintText: 'Active course',
+                            icon: Icons.menu_book_outlined,
+                            selectedValue: _selectedCourseId,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedCourseId = value;
+                              });
+                            },
                           ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedCourseId = value;
-                      });
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Active course',
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: _selectedCourseId == null
+                                  ? null
+                                  : _takeAttendance,
+                              icon: const Icon(Icons.verified_user_outlined),
+                              label: const Text('Take attendance'),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: _selectedCourseId == null
-                          ? null
-                          : _takeAttendance,
-                      icon: const Icon(Icons.verified_user_outlined),
-                      label: const Text('Take attendance'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                  )
+                : const SizedBox.shrink(),
           ),
-          const SizedBox(height: 16),
+          if (_formExpanded) const SizedBox(height: 16),
           _RecordsTable(
             controller: widget.controller,
             records: widget.controller.recordsForStudent(user.id),
@@ -879,11 +933,15 @@ class _PageHeader extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.onToggle,
+    this.formExpanded = false,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
+  final VoidCallback? onToggle;
+  final bool formExpanded;
   static const Color color = Color(0xFF1E5674);
 
   @override
@@ -924,6 +982,20 @@ class _PageHeader extends StatelessWidget {
               ],
             ),
           ),
+          if (onToggle != null)
+            IconButton(
+              icon: Icon(
+                formExpanded
+                    ? Icons.expand_less_rounded
+                    : Icons.expand_more_rounded,
+              ),
+              style: IconButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: onToggle,
+            ),
         ],
       ),
     );

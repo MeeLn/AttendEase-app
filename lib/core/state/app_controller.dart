@@ -105,7 +105,7 @@ class AppController extends ChangeNotifier {
       return validation;
     }
     if (department.trim().isEmpty) {
-      return 'Department is required.';
+      return 'Please select a department.';
     }
     if (rollNumber.trim().isEmpty) {
       return 'Roll number is required.';

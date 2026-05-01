@@ -27,6 +27,8 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _obscureNew = true;
   bool _obscureConfirm = true;
   bool _isSaving = false;
+  bool _personalInfoExpanded = false;
+  bool _passwordExpanded = false;
 
   @override
   void initState() {
@@ -60,17 +62,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final isAdmin = session.role == UserRole.admin;
     final isStudent = session.role == UserRole.student;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F2C3F),
-        elevation: 0,
-        shadowColor: Colors.black12,
-        scrolledUnderElevation: 1,
-      ),
-      backgroundColor: const Color(0xFFF4F6F8),
-      body: SingleChildScrollView(
+    return Container(
+      color: const Color(0xFFF4F6F8),
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,56 +167,67 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: Icons.person_outline,
                 title: 'Personal Info',
                 subtitle: 'Update your profile details below.',
+                onToggle: () => setState(() => _personalInfoExpanded = !_personalInfoExpanded),
+                expanded: _personalInfoExpanded,
               ),
-              const SizedBox(height: 12),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Row(
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                child: _personalInfoExpanded
+                    ? Column(
                         children: [
-                          Expanded(
-                            child: _buildField(
-                              controller: _firstName,
-                              label: 'First name',
-                              icon: Icons.person_outlined,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildField(
-                              controller: _lastName,
-                              label: 'Last name',
-                              icon: Icons.badge_outlined,
+                          const SizedBox(height: 12),
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildField(
+                                          controller: _firstName,
+                                          label: 'First name',
+                                          icon: Icons.person_outlined,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildField(
+                                          controller: _lastName,
+                                          label: 'Last name',
+                                          icon: Icons.badge_outlined,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildField(
+                                    controller: _email,
+                                    label: 'Email',
+                                    icon: Icons.email_outlined,
+                                    keyboardType: TextInputType.emailAddress,
+                                  ),
+                                  if (isStudent) ...[
+                                    const SizedBox(height: 16),
+                                    _buildField(
+                                      controller: _department,
+                                      label: 'Department',
+                                      icon: Icons.account_tree_outlined,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    _buildField(
+                                      controller: _rollNumber,
+                                      label: 'Roll number',
+                                      icon: Icons.numbers_outlined,
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildField(
-                        controller: _email,
-                        label: 'Email',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      if (isStudent) ...[
-                        const SizedBox(height: 16),
-                        _buildField(
-                          controller: _department,
-                          label: 'Department',
-                          icon: Icons.account_tree_outlined,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildField(
-                          controller: _rollNumber,
-                          label: 'Roll number',
-                          icon: Icons.numbers_outlined,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+                      )
+                    : const SizedBox.shrink(),
               ),
 
               const SizedBox(height: 20),
@@ -231,53 +236,68 @@ class _ProfilePageState extends State<ProfilePage> {
                 title: 'Change Password',
                 subtitle:
                     'Leave blank to keep your current password.',
+                onToggle: () => setState(() => _passwordExpanded = !_passwordExpanded),
+                expanded: _passwordExpanded,
               ),
-              const SizedBox(height: 12),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      _buildPasswordField(
-                        controller: _newPassword,
-                        label: 'New password',
-                        obscure: _obscureNew,
-                        onToggle: () =>
-                            setState(() => _obscureNew = !_obscureNew),
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                child: _passwordExpanded
+                    ? Column(
+                        children: [
+                          const SizedBox(height: 12),
+                          Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                children: [
+                                  _buildPasswordField(
+                                    controller: _newPassword,
+                                    label: 'New password',
+                                    obscure: _obscureNew,
+                                    onToggle: () =>
+                                        setState(() => _obscureNew = !_obscureNew),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildPasswordField(
+                                    controller: _confirmPassword,
+                                    label: 'Confirm new password',
+                                    obscure: _obscureConfirm,
+                                    onToggle: () =>
+                                        setState(() => _obscureConfirm = !_obscureConfirm),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              if (_personalInfoExpanded || _passwordExpanded)
+                Column(
+                  children: [
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _isSaving ? null : _save,
+                        icon: _isSaving
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : const Icon(Icons.save_outlined),
+                        label: const Text('Save changes'),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: const Color(0xFF1E5674),
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      _buildPasswordField(
-                        controller: _confirmPassword,
-                        label: 'Confirm new password',
-                        obscure: _obscureConfirm,
-                        onToggle: () =>
-                            setState(() => _obscureConfirm = !_obscureConfirm),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ),
-
-              const SizedBox(height: 28),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _isSaving ? null : _save,
-                  icon: _isSaving
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child:
-                              CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Icon(Icons.save_outlined),
-                  label: const Text('Save changes'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: const Color(0xFF1E5674),
-                  ),
-                ),
-              ),
             ],
             const SizedBox(height: 32),
           ],
@@ -379,11 +399,15 @@ class _SectionHeader extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.onToggle,
+    this.expanded = false,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
+  final VoidCallback? onToggle;
+  final bool expanded;
 
   @override
   Widget build(BuildContext context) {
@@ -418,6 +442,20 @@ class _SectionHeader extends StatelessWidget {
             ],
           ),
         ),
+        if (onToggle != null)
+          IconButton(
+            icon: Icon(
+              expanded
+                  ? Icons.expand_less_rounded
+                  : Icons.expand_more_rounded,
+            ),
+            style: IconButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: onToggle,
+          ),
       ],
     );
   }
