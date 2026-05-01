@@ -15,21 +15,6 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = controller.currentUser;
-    final title = switch (role) {
-      UserRole.admin => 'Admin command center',
-      UserRole.teacher => 'Teacher dashboard',
-      UserRole.student => 'Student dashboard',
-    };
-    final subtitle = switch (role) {
-      UserRole.admin =>
-        'Review registrations, curate departments, and keep courses ready for attendance.',
-      UserRole.teacher =>
-        'Launch attendance sessions and review course activity from one place.',
-      UserRole.student =>
-        'Register your face profile, check attendance, and stay on top of active courses.',
-    };
-
     final stats = _statsForRole();
 
     return CustomScrollView(
@@ -37,47 +22,26 @@ class DashboardPage extends StatelessWidget {
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _HeaderCard(
-                  title: title,
-                  subtitle: subtitle,
-                  role: role,
-                  currentUserName: currentUser?.fullName,
-                  onLogout: controller.logout,
+                _PageHeader(
+                  icon: Icons.dashboard_customize_outlined,
+                  title: 'Overview',
+                  subtitle: 'A quick glance at your workspace stats.',
                 ),
-                const SizedBox(height: 20),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  children: stats
-                      .map(
-                        (stat) =>
-                            SizedBox(width: 220, child: _StatCard(stat: stat)),
-                      )
-                      .toList(),
-                ),
-                const SizedBox(height: 20),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'What changed in Flutter',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'This version keeps the original roles and attendance flow, but moves the app into a cleaner Flutter shell. Native face recognition is represented as a face-registration workflow so the rest of the product stays usable while camera ML integration is rebuilt.',
-                          style: TextStyle(height: 1.6),
-                        ),
-                      ],
-                    ),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    mainAxisExtent: 200,
                   ),
+                  itemCount: stats.length,
+                  itemBuilder: (context, index) => _StatCard(stat: stats[index]),
                 ),
               ],
             ),
@@ -188,12 +152,16 @@ class _CoursesPageState extends State<CoursesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return _PageScaffold(
-      title: 'Course management',
-      subtitle:
-          'Add courses and control whether they appear in attendance workflows.',
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const _PageHeader(
+            icon: Icons.menu_book_outlined,
+            title: 'Courses',
+            subtitle: 'Manage and activate courses for attendance.',
+          ),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -222,6 +190,17 @@ class _CoursesPageState extends State<CoursesPage> {
             ),
           ),
           const SizedBox(height: 16),
+          if (widget.controller.courses.isNotEmpty)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.list_alt_outlined, size: 16, color: Colors.black45),
+                  SizedBox(width: 8),
+                  Text('All Courses', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black54, fontSize: 13)),
+                ],
+              ),
+            ),
           ...widget.controller.courses.map(
             (course) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -233,10 +212,19 @@ class _CoursesPageState extends State<CoursesPage> {
                   ),
                   title: Text(course.name),
                   subtitle: Text('${course.credits} credits'),
-                  trailing: Switch(
-                    value: course.isActive,
-                    onChanged: (_) async =>
-                        widget.controller.toggleCourseStatus(course.id),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Switch(
+                        value: course.isActive,
+                        onChanged: (_) async =>
+                            widget.controller.toggleCourseStatus(course.id),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: () => widget.controller.deleteCourse(course.id),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -291,11 +279,16 @@ class _DepartmentsPageState extends State<DepartmentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return _PageScaffold(
-      title: 'Departments',
-      subtitle: 'Keep student registration aligned to active academic units.',
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const _PageHeader(
+            icon: Icons.account_tree_outlined,
+            title: 'Departments',
+            subtitle: 'Organise academic departments for student grouping.',
+          ),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -319,13 +312,28 @@ class _DepartmentsPageState extends State<DepartmentsPage> {
             ),
           ),
           const SizedBox(height: 16),
+          if (widget.controller.departments.isNotEmpty)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.list_alt_outlined, size: 16, color: Colors.black45),
+                  SizedBox(width: 8),
+                  Text('All Departments', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black54, fontSize: 13)),
+                ],
+              ),
+            ),
           ...widget.controller.departments.map(
             (department) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Card(
                 child: ListTile(
-                  leading: const Icon(Icons.account_tree_outlined),
                   title: Text(department.name),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    onPressed: () =>
+                        widget.controller.deleteDepartment(department.id),
+                  ),
                 ),
               ),
             ),
@@ -364,11 +372,28 @@ class UsersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _PageScaffold(
-      title: 'User approvals',
-      subtitle: 'Activate or deactivate student and teacher accounts.',
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: Column(
-        children: controller.users.map((user) {
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _PageHeader(
+            icon: Icons.people_alt_outlined,
+            title: 'Users',
+            subtitle: 'Review, approve, and manage all registered users.',
+          ),
+          if (controller.users.isNotEmpty)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.list_alt_outlined, size: 16, color: Colors.black45),
+                  SizedBox(width: 8),
+                  Text('All Users', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black54, fontSize: 13)),
+                ],
+              ),
+            ),
+          ...controller.users.map((user) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Card(
@@ -381,14 +406,24 @@ class UsersPage extends StatelessWidget {
                 subtitle: Text(
                   '${user.role.name.toUpperCase()} • ${user.email}${user.department != null ? ' • ${user.department}' : ''}',
                 ),
-                trailing: Switch(
-                  value: user.isActive,
-                  onChanged: (_) async => controller.toggleUserStatus(user.id),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Switch(
+                      value: user.isActive,
+                      onChanged: (_) async => controller.toggleUserStatus(user.id),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: () => controller.deleteUser(user.id),
+                    ),
+                  ],
                 ),
               ),
             ),
           );
-        }).toList(),
+        }),
+        ],
       ),
     );
   }
@@ -408,50 +443,78 @@ class _TeacherAttendancePageState extends State<TeacherAttendancePage> {
 
   @override
   Widget build(BuildContext context) {
-    final courses = widget.controller.activeCourses;
+    final courses = widget.controller.courses;
     final students = widget.controller.students
         .where((student) => student.isActive)
         .toList();
 
     _selectedCourseId ??= courses.isNotEmpty ? courses.first.id : null;
 
-    return _PageScaffold(
-      title: 'Start attendance',
-      subtitle: 'Choose an active course and mark present students for today.',
+    final selectedCourse = _selectedCourseId != null
+        ? widget.controller.courses
+            .firstWhere((c) => c.id == _selectedCourseId)
+        : null;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const _PageHeader(
+            icon: Icons.how_to_reg_outlined,
+            title: 'Take Attendance',
+            subtitle: 'Select a course and mark students as present.',
+          ),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
-              child: DropdownButtonFormField<int>(
-                initialValue: _selectedCourseId,
-                items: courses
-                    .map(
-                      (course) => DropdownMenuItem(
-                        value: course.id,
-                        child: Text(
-                          '${course.name} (${course.credits} credits)',
+              child: Column(
+                children: [
+                  DropdownButtonFormField<int>(
+                    initialValue: _selectedCourseId,
+                    items: courses
+                        .map(
+                          (course) => DropdownMenuItem(
+                            value: course.id,
+                            child: Text(
+                              '${course.name} (${course.credits} credits)',
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCourseId = value;
+                      });
+                    },
+                    decoration: const InputDecoration(labelText: 'Select course'),
+                  ),
+                  if (selectedCourse != null) ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Text('Course Attendance Status:'),
+                        const Spacer(),
+                        Switch(
+                          value: selectedCourse.isActive,
+                          onChanged: (_) async =>
+                              widget.controller.toggleCourseStatus(selectedCourse.id),
                         ),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCourseId = value;
-                  });
-                },
-                decoration: const InputDecoration(labelText: 'Active course'),
+                        Text(selectedCourse.isActive ? 'Active' : 'Inactive'),
+                      ],
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
           const SizedBox(height: 16),
-          if (courses.isEmpty)
+          if (selectedCourse == null || !selectedCourse.isActive)
             const Card(
               child: Padding(
                 padding: EdgeInsets.all(20),
                 child: Text(
-                  'No active courses available. Ask admin to activate one.',
+                  'This course is not active. Activate it above to start taking attendance.',
                 ),
               ),
             )
@@ -511,39 +574,71 @@ class TeacherRecordsPage extends StatefulWidget {
 
 class _TeacherRecordsPageState extends State<TeacherRecordsPage> {
   int? _selectedCourseId;
+  String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
     final courses = widget.controller.courses;
     _selectedCourseId ??= courses.isNotEmpty ? courses.first.id : null;
-    final records = _selectedCourseId == null
+    var records = _selectedCourseId == null
         ? <AttendanceRecord>[]
         : widget.controller.recordsForCourse(_selectedCourseId!);
 
-    return _PageScaffold(
-      title: 'Attendance records',
-      subtitle: 'Review attendance by course.',
+    if (_searchQuery.isNotEmpty) {
+      records = records.where((record) {
+        final student = widget.controller.studentById(record.studentId);
+        return student.fullName
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()) ||
+            (student.rollNumber?.contains(_searchQuery) ?? false);
+      }).toList();
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const _PageHeader(
+            icon: Icons.fact_check_outlined,
+            title: 'Attendance Records',
+            subtitle: 'Filter and search all course attendance logs.',
+          ),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
-              child: DropdownButtonFormField<int>(
-                initialValue: _selectedCourseId,
-                items: courses
-                    .map(
-                      (course) => DropdownMenuItem(
-                        value: course.id,
-                        child: Text(course.name),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCourseId = value;
-                  });
-                },
-                decoration: const InputDecoration(labelText: 'Course'),
+              child: Column(
+                children: [
+                  DropdownButtonFormField<int>(
+                    initialValue: _selectedCourseId,
+                    items: courses
+                        .map(
+                          (course) => DropdownMenuItem(
+                            value: course.id,
+                            child: Text(course.name),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCourseId = value;
+                      });
+                    },
+                    decoration: const InputDecoration(labelText: 'Course'),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Search by Student Name or Roll Number',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                  ),
+                ],
               ),
             ),
           ),
@@ -564,16 +659,22 @@ class StudentFacePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = controller.currentUser!;
 
-    return _PageScaffold(
-      title: 'Face profile',
-      subtitle:
-          'Register and refresh the face profile used for attendance verification.',
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _PageHeader(
+            icon: Icons.face_outlined,
+            title: 'Face Profile',
+            subtitle: 'Register your biometric profile for attendance verification.',
+          ),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               Row(
                 children: [
                   CircleAvatar(
@@ -611,8 +712,33 @@ class StudentFacePage extends StatelessWidget {
               const SizedBox(height: 20),
               FilledButton.icon(
                 onPressed: () async {
-                  final message = await controller
-                      .registerFaceForCurrentStudent();
+                  if (user.hasFaceRegistered) {
+                    final proceed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Face Already Registered'),
+                        content: const Text(
+                          'Your face is already registered. Do you want to re-register your face?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('No'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('Yes'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (proceed != true) {
+                      return;
+                    }
+                  }
+
+                  final message =
+                      await controller.registerFaceForCurrentStudent();
                   if (!context.mounted) {
                     return;
                   }
@@ -632,6 +758,8 @@ class StudentFacePage extends StatelessWidget {
             ],
           ),
         ),
+      ),
+        ],
       ),
     );
   }
@@ -655,11 +783,16 @@ class _StudentAttendancePageState extends State<StudentAttendancePage> {
     final user = widget.controller.currentUser!;
     _selectedCourseId ??= courses.isNotEmpty ? courses.first.id : null;
 
-    return _PageScaffold(
-      title: 'My attendance',
-      subtitle: 'Mark today’s attendance and review your history.',
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const _PageHeader(
+            icon: Icons.event_available_outlined,
+            title: 'My Attendance',
+            subtitle: 'View your attendance records and mark yourself present.',
+          ),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -724,110 +857,59 @@ class _StudentAttendancePageState extends State<StudentAttendancePage> {
   }
 }
 
-class _PageScaffold extends StatelessWidget {
-  const _PageScaffold({
+
+
+class _PageHeader extends StatelessWidget {
+  const _PageHeader({
+    required this.icon,
     required this.title,
     required this.subtitle,
-    required this.child,
   });
 
+  final IconData icon;
   final String title;
   final String subtitle;
-  final Widget child;
+  static const Color color = Color(0xFF1E5674);
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Row(
         children: [
-          Text(title, style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: const TextStyle(height: 1.5, color: Colors.black54),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: color, size: 24),
           ),
-          const SizedBox(height: 20),
-          child,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0F2C3F),
+                      ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Colors.black54),
+                ),
+              ],
+            ),
+          ),
         ],
-      ),
-    );
-  }
-}
-
-class _HeaderCard extends StatelessWidget {
-  const _HeaderCard({
-    required this.title,
-    required this.subtitle,
-    required this.role,
-    required this.currentUserName,
-    required this.onLogout,
-  });
-
-  final String title;
-  final String subtitle;
-  final UserRole role;
-  final String? currentUserName;
-  final VoidCallback onLogout;
-
-  @override
-  Widget build(BuildContext context) {
-    final roleLabel = role == UserRole.admin
-        ? 'Administrator'
-        : currentUserName ?? role.name;
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF12344D), Color(0xFF2B6B8A), Color(0xFF79A8C0)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    roleLabel,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    title,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineMedium?.copyWith(color: Colors.white),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(color: Colors.white70, height: 1.5),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            FilledButton.tonalIcon(
-              onPressed: onLogout,
-              icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF12344D),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

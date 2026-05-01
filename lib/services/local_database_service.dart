@@ -116,6 +116,11 @@ class LocalDatabaseService {
     );
   }
 
+  Future<void> deleteUser(int userId) async {
+    final db = await database;
+    await db.delete('users', where: 'id = ?', whereArgs: [userId]);
+  }
+
   Future<void> updateUserFaceRegistered(int userId, bool registered) async {
     final db = await database;
     await db.update(
@@ -124,6 +129,27 @@ class LocalDatabaseService {
       where: 'id = ?',
       whereArgs: [userId],
     );
+  }
+
+  Future<void> updateUserProfile({
+    required int userId,
+    required String firstName,
+    required String lastName,
+    required String email,
+    String? department,
+    String? rollNumber,
+    String? newPassword,
+  }) async {
+    final db = await database;
+    final data = <String, dynamic>{
+      'first_name': firstName.trim(),
+      'last_name': lastName.trim(),
+      'email': email.trim().toLowerCase(),
+      if (department != null) 'department': department.trim(),
+      if (rollNumber != null) 'roll_number': rollNumber.trim(),
+      if (newPassword != null && newPassword.isNotEmpty) 'password': newPassword,
+    };
+    await db.update('users', data, where: 'id = ?', whereArgs: [userId]);
   }
 
   Future<List<Department>> fetchDepartments() async {
@@ -147,6 +173,11 @@ class LocalDatabaseService {
   Future<int> insertDepartment(String name) async {
     final db = await database;
     return db.insert('departments', {'name': name});
+  }
+
+  Future<void> deleteDepartment(int departmentId) async {
+    final db = await database;
+    await db.delete('departments', where: 'id = ?', whereArgs: [departmentId]);
   }
 
   Future<List<Course>> fetchCourses() async {
@@ -184,6 +215,11 @@ class LocalDatabaseService {
       where: 'id = ?',
       whereArgs: [courseId],
     );
+  }
+
+  Future<void> deleteCourse(int courseId) async {
+    final db = await database;
+    await db.delete('courses', where: 'id = ?', whereArgs: [courseId]);
   }
 
   Future<List<AttendanceRecord>> fetchAttendance() async {
@@ -232,81 +268,8 @@ class LocalDatabaseService {
   }
 
   Future<void> seedIfEmpty() async {
-    if (await hasAnyUsers()) {
-      return;
-    }
-
-    final db = await database;
-    await db.transaction((txn) async {
-      final csId = await txn.insert('departments', {
-        'name': 'Computer Science',
-      });
-      await txn.insert('departments', {'name': 'Business Studies'});
-      await txn.insert('departments', {'name': 'Design'});
-
-      final mobileId = await txn.insert('courses', {
-        'name': 'Mobile Computing',
-        'credits': 3,
-        'is_active': 1,
-      });
-      await txn.insert('courses', {
-        'name': 'Cloud Fundamentals',
-        'credits': 4,
-        'is_active': 1,
-      });
-      await txn.insert('courses', {
-        'name': 'Human Computer Interaction',
-        'credits': 2,
-        'is_active': 0,
-      });
-
-      await txn.insert('users', {
-        'role': UserRole.teacher.name,
-        'first_name': 'Ava',
-        'last_name': 'Sharma',
-        'email': 'teacher@attendease.app',
-        'password': 'teacher123',
-        'is_active': 1,
-        'has_face_registered': 0,
-      });
-
-      final studentId = await txn.insert('users', {
-        'role': UserRole.student.name,
-        'first_name': 'Milan',
-        'last_name': 'Raut',
-        'email': 'student@attendease.app',
-        'password': 'student123',
-        'department': 'Computer Science',
-        'roll_number': 'CS-24-019',
-        'is_active': 1,
-        'has_face_registered': 0,
-      });
-
-      await txn.insert('users', {
-        'role': UserRole.student.name,
-        'first_name': 'Riya',
-        'last_name': 'Thapa',
-        'email': 'riya@attendease.app',
-        'password': 'student123',
-        'department': 'Design',
-        'roll_number': 'DS-24-007',
-        'is_active': 0,
-        'has_face_registered': 0,
-      });
-
-      final recordedAt = DateTime.now().subtract(const Duration(days: 1));
-      await txn.insert('attendance', {
-        'student_id': studentId,
-        'course_id': mobileId,
-        'attendance_date': _dateOnly(recordedAt),
-        'recorded_at': recordedAt.toIso8601String(),
-        'method': 'Face verified',
-      });
-
-      if (csId <= 0) {
-        throw StateError('Failed to seed departments');
-      }
-    });
+    // Hardcoded data removed as per task requirements.
+    // Admin credentials remain hardcoded in AppController.
   }
 
   Future<Database> _openDatabase() async {
@@ -325,6 +288,7 @@ class LocalDatabaseService {
             password TEXT NOT NULL,
             department TEXT,
             roll_number TEXT,
+            profile_picture TEXT,
             is_active INTEGER NOT NULL DEFAULT 0,
             has_face_registered INTEGER NOT NULL DEFAULT 0
           )
@@ -387,6 +351,7 @@ class LocalDatabaseService {
       password: map['password'] as String,
       department: map['department'] as String?,
       rollNumber: map['roll_number'] as String?,
+      profilePicture: map['profile_picture'] as String?,
       isActive: (map['is_active'] as int) == 1,
       hasFaceRegistered: (map['has_face_registered'] as int) == 1,
     );

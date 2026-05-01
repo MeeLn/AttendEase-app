@@ -15,6 +15,9 @@ class AuthPage extends StatefulWidget {
 
 class _AuthPageState extends State<AuthPage> {
   _AuthMode _mode = _AuthMode.login;
+  bool _obscureLoginPassword = true;
+  bool _obscureRegisterPassword = true;
+  bool _obscureConfirmPassword = true;
 
   final _loginEmail = TextEditingController();
   final _loginPassword = TextEditingController();
@@ -52,8 +55,6 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.sizeOf(context).width >= 1000;
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -76,27 +77,8 @@ class _AuthPageState extends State<AuthPage> {
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1120),
-                    child: isWide
-                        ? Row(
-                            children: [
-                              Expanded(child: _buildHero(context)),
-                              const SizedBox(width: 28),
-                              SizedBox(width: 460, child: _buildPanel(context)),
-                            ],
-                          )
-                        : Column(
-                            children: [
-                              _buildHero(context),
-                              const SizedBox(height: 24),
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 480,
-                                ),
-                                child: _buildPanel(context),
-                              ),
-                            ],
-                          ),
+                    constraints: const BoxConstraints(maxWidth: 460),
+                    child: _buildPanel(context),
                   ),
                 ),
               ),
@@ -107,68 +89,7 @@ class _AuthPageState extends State<AuthPage> {
     );
   }
 
-  Widget _buildHero(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: Colors.white24),
-            ),
-            child: const Text(
-              'Campus attendance, rebuilt in Flutter',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text(
-            'AttendEase',
-            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-              color: Colors.white,
-              fontSize: 56,
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Role-based attendance management for admins, teachers, and students with a cleaner mobile-first experience.',
-            style: TextStyle(color: Colors.white70, fontSize: 18, height: 1.5),
-          ),
-          const SizedBox(height: 28),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: const [
-              _HeroPill(title: 'Admin approval flow'),
-              _HeroPill(title: 'Course activation controls'),
-              _HeroPill(title: 'Student face-registration step'),
-            ],
-          ),
-          const SizedBox(height: 28),
-          const Text(
-            'Demo accounts',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Admin: admin@admin.com / admin123\nTeacher: teacher@attendease.app / teacher123\nStudent: student@attendease.app / student123',
-            style: TextStyle(color: Colors.white70, height: 1.7),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildPanel(BuildContext context) {
     return Card(
@@ -189,16 +110,27 @@ class _AuthPageState extends State<AuthPage> {
   Widget _buildLoginForm(BuildContext context) {
     return Column(
       key: const ValueKey('login'),
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Welcome back', style: Theme.of(context).textTheme.headlineMedium),
+        Image.asset(
+          'assets/ic_launcher.png',
+          height: 64,
+          width: 64,
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Welcome back',
+          style: Theme.of(context).textTheme.headlineMedium,
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 8),
         Text(
           'Sign in to continue to your attendance workspace.',
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
         TextField(
@@ -206,16 +138,32 @@ class _AuthPageState extends State<AuthPage> {
           keyboardType: TextInputType.emailAddress,
           decoration: const InputDecoration(
             labelText: 'Email',
-            prefixIcon: Icon(Icons.person_outline),
+            prefixIcon: Icon(Icons.person_outline, color: Color(0xFF1E5674)),
           ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: _loginPassword,
-          obscureText: true,
-          decoration: const InputDecoration(
+          obscureText: _obscureLoginPassword,
+          decoration: InputDecoration(
             labelText: 'Password',
-            prefixIcon: Icon(Icons.lock_outline),
+            prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF1E5674)),
+            suffixIcon: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                constraints: const BoxConstraints(),
+                padding: EdgeInsets.zero,
+                icon: Icon(
+                  _obscureLoginPassword
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: const Color(0xFF1E5674),
+                ),
+                onPressed: () => setState(() {
+                  _obscureLoginPassword = !_obscureLoginPassword;
+                }),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 20),
@@ -245,7 +193,7 @@ class _AuthPageState extends State<AuthPage> {
   Widget _buildStudentForm(BuildContext context) {
     return Column(
       key: const ValueKey('student'),
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildRegisterHeader(
@@ -254,23 +202,41 @@ class _AuthPageState extends State<AuthPage> {
           subtitle:
               'New student accounts remain inactive until approved by admin.',
         ),
-        _buildTextField(_studentFirstName, 'First name'),
+        _buildTextField(_studentFirstName, 'First name', Icons.person_outlined),
         const SizedBox(height: 12),
-        _buildTextField(_studentLastName, 'Last name'),
+        _buildTextField(_studentLastName, 'Last name', Icons.badge_outlined),
         const SizedBox(height: 12),
-        _buildTextField(_studentDepartment, 'Department'),
+        _buildTextField(_studentDepartment, 'Department', Icons.school_outlined),
         const SizedBox(height: 12),
-        _buildTextField(_studentRoll, 'Roll number'),
+        _buildTextField(_studentRoll, 'Roll number', Icons.numbers_outlined),
         const SizedBox(height: 12),
-        _buildTextField(_studentEmail, 'Email', TextInputType.emailAddress),
+        _buildTextField(
+          _studentEmail,
+          'Email',
+          Icons.email_outlined,
+          keyboardType: TextInputType.emailAddress,
+        ),
         const SizedBox(height: 12),
-        _buildTextField(_studentPassword, 'Password', null, true),
+        _buildTextField(
+          _studentPassword,
+          'Password',
+          Icons.lock_outline,
+          obscureText: _obscureRegisterPassword,
+          isPassword: true,
+          onToggleObscure: () => setState(() {
+            _obscureRegisterPassword = !_obscureRegisterPassword;
+          }),
+        ),
         const SizedBox(height: 12),
         _buildTextField(
           _studentConfirmPassword,
           'Confirm password',
-          null,
-          true,
+          Icons.lock_reset_outlined,
+          obscureText: _obscureConfirmPassword,
+          isPassword: true,
+          onToggleObscure: () => setState(() {
+            _obscureConfirmPassword = !_obscureConfirmPassword;
+          }),
         ),
         const SizedBox(height: 18),
         SizedBox(
@@ -292,7 +258,7 @@ class _AuthPageState extends State<AuthPage> {
   Widget _buildTeacherForm(BuildContext context) {
     return Column(
       key: const ValueKey('teacher'),
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildRegisterHeader(
@@ -301,19 +267,37 @@ class _AuthPageState extends State<AuthPage> {
           subtitle:
               'Use this if you need course attendance and reporting access.',
         ),
-        _buildTextField(_teacherFirstName, 'First name'),
+        _buildTextField(_teacherFirstName, 'First name', Icons.person_outlined),
         const SizedBox(height: 12),
-        _buildTextField(_teacherLastName, 'Last name'),
+        _buildTextField(_teacherLastName, 'Last name', Icons.badge_outlined),
         const SizedBox(height: 12),
-        _buildTextField(_teacherEmail, 'Email', TextInputType.emailAddress),
+        _buildTextField(
+          _teacherEmail,
+          'Email',
+          Icons.email_outlined,
+          keyboardType: TextInputType.emailAddress,
+        ),
         const SizedBox(height: 12),
-        _buildTextField(_teacherPassword, 'Password', null, true),
+        _buildTextField(
+          _teacherPassword,
+          'Password',
+          Icons.lock_outline,
+          obscureText: _obscureRegisterPassword,
+          isPassword: true,
+          onToggleObscure: () => setState(() {
+            _obscureRegisterPassword = !_obscureRegisterPassword;
+          }),
+        ),
         const SizedBox(height: 12),
         _buildTextField(
           _teacherConfirmPassword,
           'Confirm password',
-          null,
-          true,
+          Icons.lock_reset_outlined,
+          obscureText: _obscureConfirmPassword,
+          isPassword: true,
+          onToggleObscure: () => setState(() {
+            _obscureConfirmPassword = !_obscureConfirmPassword;
+          }),
         ),
         const SizedBox(height: 18),
         SizedBox(
@@ -338,15 +322,26 @@ class _AuthPageState extends State<AuthPage> {
     required String subtitle,
   }) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(title, style: Theme.of(context).textTheme.headlineMedium),
+        Image.asset(
+          'assets/admin-logo.png',
+          height: 64,
+          width: 64,
+        ),
+        const SizedBox(height: 24),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.headlineMedium,
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 8),
         Text(
           subtitle,
           style: Theme.of(
             context,
           ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 18),
         SegmentedButton<_AuthMode>(
@@ -387,15 +382,38 @@ class _AuthPageState extends State<AuthPage> {
 
   Widget _buildTextField(
     TextEditingController controller,
-    String label, [
+    String label,
+    IconData prefixIcon, {
     TextInputType? keyboardType,
     bool obscureText = false,
-  ]) {
+    bool isPassword = false,
+    VoidCallback? onToggleObscure,
+  }) {
+    const iconColor = Color(0xFF1E5674);
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
-      decoration: InputDecoration(labelText: label),
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(prefixIcon, color: iconColor),
+        suffixIcon: isPassword
+            ? Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: IconButton(
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                  icon: Icon(
+                    obscureText
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: iconColor,
+                  ),
+                  onPressed: onToggleObscure,
+                ),
+              )
+            : null,
+      ),
     );
   }
 
@@ -483,27 +501,4 @@ class _AuthPageState extends State<AuthPage> {
   }
 }
 
-class _HeroPill extends StatelessWidget {
-  const _HeroPill({required this.title});
 
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}

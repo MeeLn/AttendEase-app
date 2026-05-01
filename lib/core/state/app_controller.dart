@@ -173,6 +173,12 @@ class AppController extends ChangeNotifier {
     return null;
   }
 
+  Future<void> deleteDepartment(int departmentId) async {
+    await _database.deleteDepartment(departmentId);
+    await _reloadData();
+    notifyListeners();
+  }
+
   Future<String?> addCourse({
     required String name,
     required String creditsText,
@@ -194,11 +200,57 @@ class AppController extends ChangeNotifier {
     return null;
   }
 
+  Future<void> deleteCourse(int courseId) async {
+    await _database.deleteCourse(courseId);
+    await _reloadData();
+    notifyListeners();
+  }
+
   Future<void> toggleUserStatus(int userId) async {
     final user = users.firstWhere((candidate) => candidate.id == userId);
     await _database.updateUserStatus(userId, !user.isActive);
     await _reloadData();
     notifyListeners();
+  }
+
+  Future<void> deleteUser(int userId) async {
+    await _database.deleteUser(userId);
+    await _reloadData();
+    notifyListeners();
+  }
+
+  Future<String?> updateUserProfile({
+    required int userId,
+    required String firstName,
+    required String lastName,
+    required String email,
+    String? department,
+    String? rollNumber,
+    String? newPassword,
+    String? confirmPassword,
+  }) async {
+    if (firstName.trim().isEmpty || lastName.trim().isEmpty || email.trim().isEmpty) {
+      return 'First name, last name and email are required.';
+    }
+    if (!email.contains('@') || !email.contains('.')) {
+      return 'Enter a valid email address.';
+    }
+    if (newPassword != null && newPassword.isNotEmpty) {
+      if (newPassword.length < 6) return 'Password must be at least 6 characters.';
+      if (newPassword != confirmPassword) return 'Passwords do not match.';
+    }
+    await _database.updateUserProfile(
+      userId: userId,
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      department: department,
+      rollNumber: rollNumber,
+      newPassword: (newPassword != null && newPassword.isNotEmpty) ? newPassword : null,
+    );
+    await _reloadData();
+    notifyListeners();
+    return null;
   }
 
   Future<void> toggleCourseStatus(int courseId) async {

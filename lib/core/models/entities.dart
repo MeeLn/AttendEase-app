@@ -33,6 +33,7 @@ class UserAccount {
     this.rollNumber,
     this.isActive = false,
     this.hasFaceRegistered = false,
+    this.profilePicture,
   });
 
   final int id;
@@ -43,10 +44,14 @@ class UserAccount {
   final String password;
   final String? department;
   final String? rollNumber;
+  final String? profilePicture;
   bool isActive;
   bool hasFaceRegistered;
 
   String get fullName => '$firstName $lastName';
+  String get initials =>
+      '${firstName.isNotEmpty ? firstName[0] : ''}${lastName.isNotEmpty ? lastName[0] : ''}'
+          .toUpperCase();
 }
 
 class AttendanceRecord {
